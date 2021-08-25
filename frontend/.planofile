@@ -1,9 +1,9 @@
-image_tag = "quay.io/ssorj/trade-zoo-frontend"
+image_tag = "quay.io/ssorj/patient-portal-frontend"
 
 @command
 def build_image(app):
-    with working_dir(".."):
-        run("plano build")
+    # with working_dir(".."):
+    #     run("plano build")
 
     run(f"podman build -t {image_tag} .")
 

@@ -1,8 +1,8 @@
 FROM registry.fedoraproject.org/fedora-minimal:34
 
-RUN microdnf -y install python3 && microdnf clean all
+RUN microdnf -y install python3 python3-psycopg2 && microdnf clean all
 
-RUN pip3 install starlette sse_starlette confluent_kafka uvicorn
+RUN pip3 install starlette sse_starlette uvicorn
 
 ADD main.py /app/main.py
 ADD animalid.py /app/animalid.py

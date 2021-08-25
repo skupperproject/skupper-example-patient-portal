@@ -19,6 +19,7 @@
 
 import asyncio
 import os
+import psycopg2
 import threading
 import time
 import uvicorn
@@ -40,19 +41,36 @@ data_request_queues = set()
 def log(message):
     print(f"{process_id}: {message}")
 
-## Kafka
+## Database
 
-def process_updates():
-    consumer = create_update_consumer(process_id)
+database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
+database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
 
-    try:
-        for item in consume_items(consumer):
-            store.put(item)
+database = psycopg2.connect(host=database_host,
+                            port=database_port,
+                            database="patient_portal",
+                            user="patient_portal",
+                            password="secret")
 
-            for queue in data_request_queues:
-                asyncio.run(queue.put(item))
-    finally:
-        consumer.close()
+# def process_updates():
+#     while True:
+#         log("tick")
+#         time.sleep(1) # XXX Sucks
+
+#         with database.cursor() as cur:
+#             print("before execute")
+#             cur.execute("select * from patients");
+#             print("after execute")
+#             records = cur.fetchall()
+#             print("after fetchall")
+
+#         for record in records:
+#             patient = Patient(id=None) # XXX
+#             patient.name = record[0]
+
+#             store.put(patient)
+
+#             log(patient)
 
 ## HTTP
 
@@ -64,118 +82,45 @@ star.mount("/static", StaticFiles(directory="static"), name="static")
 
 @star.route("/")
 async def get_index(request):
-    user_id = request.query_params.get("user")
-
-    if user_id is None:
-        user = await create_user()
-        return RedirectResponse(url=f"?user={user.id}")
-
-    user = await store.wait_async(User, user_id, timeout=1)
-
-    if user is None:
-        user = await create_user()
-        return RedirectResponse(url=f"?user={user.id}")
-
     return FileResponse("static/index.html")
-
-@star.route("/admin")
-async def get_admin(request):
-    user_id = request.query_params.get("user")
-
-    if user_id != "animal":
-        return Response("Forbidden", 403)
-
-    return FileResponse("static/admin.html")
-
-async def create_user():
-    log("Creating user")
-
-    user = User()
-    user.name = generate_animal_id()
-    user.creation_time = time.time()
-
-    produce_item("updates", user)
-
-    user = await store.wait_async(User, user.id)
-
-    log(f"Created {user}")
-
-    return user
 
 @star.route("/api/data")
 async def get_data(request):
-    queue = asyncio.Queue()
+    # queue = asyncio.Queue()
 
-    async def generate():
-        for item in store.get():
-            if isinstance(item, Order) and item.execution_time is not None:
-                continue
+    # async def generate():
+    #     for item in store.get():
+    #         if item.deletion_time is not None:
+    #             continue
 
-            if item.deletion_time is not None:
-                continue
+    #         yield {"data": item.json()}
 
-            yield {"data": item.json()}
+    #     data_request_queues.add(queue)
 
-        data_request_queues.add(queue)
+    #     while True:
+    #         yield {"data": (await queue.get()).json()}
 
-        while True:
-            yield {"data": (await queue.get()).json()}
+    # async def cleanup():
+    #     data_request_queues.remove(queue)
 
-    async def cleanup():
-        data_request_queues.remove(queue)
+    # return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
 
-    return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
+    with database.cursor() as cur:
+        cur.execute("select * from patients");
+        records = cur.fetchall()
 
-@star.route("/api/submit-order", methods=["POST"])
-async def submit_order(request):
-    log("Submitting order")
+    patient_data = dict()
 
-    order = Order(data=await request.json())
-    produce_item("orders", order)
+    for record in records:
+        patient = Patient(id=None) # XXX
+        patient.name = record[0]
 
-    log(f"Submitted {order}")
+        patient_data[patient.id] = patient.data()
 
-    return JSONResponse({"error": None})
-
-@star.route("/api/cancel-order", methods=["POST"])
-async def delete_order(request):
-    order_id = (await request.json())["order"]
-    order = store.get(Order, order_id)
-
-    if not order:
-        return JSONResponse({"error": "not-found"}, 404)
-
-    order.delete()
-    produce_item("updates", order)
-
-    return JSONResponse({"error": None})
-
-@star.route("/api/delete-users", methods=["POST"])
-async def delete_users(request):
-    for user in store.get(User):
-        user.delete()
-        produce_item("updates", user, flush=False)
-
-    return JSONResponse({"error": None})
-
-@star.route("/api/delete-orders", methods=["POST"])
-async def delete_orders(request):
-    for order in store.get(Order):
-        order.delete()
-        produce_item("updates", order, flush=False)
-
-    return JSONResponse({"error": None})
-
-@star.route("/api/delete-trades", methods=["POST"])
-async def delete_trades(request):
-    for trade in store.get(Trade):
-        trade.delete()
-        produce_item("updates", trade, flush=False)
-
-    return JSONResponse({"error": None})
+    return JSONResponse({"data": {"patients": patient_data}})
 
 if __name__ == "__main__":
-    update_thread = threading.Thread(target=process_updates, daemon=True)
-    update_thread.start()
+    # update_thread = threading.Thread(target=process_updates, daemon=True)
+    # update_thread.start()
 
     uvicorn.run(star, host=http_host, port=http_port, log_level="info")

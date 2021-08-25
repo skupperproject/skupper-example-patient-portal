@@ -16,10 +16,12 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: quay.io/ssorj/trade-zoo-frontend
+          image: quay.io/ssorj/patient-portal-frontend
           env:
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              value: cluster1-kafka-brokers:9092
+            - name: DATABASE_SERVICE_HOST
+              value: database
+            - name: DATABASE_SERVICE_PORT
+              value: "5432"
           ports:
             - containerPort: 8080
 ---

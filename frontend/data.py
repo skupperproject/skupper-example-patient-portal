@@ -20,7 +20,6 @@
 import asyncio as _asyncio
 import binascii as _binascii
 import collections as _collections
-import confluent_kafka as _kafka
 import inspect as _inspect
 import json as _json
 import os as _os
@@ -120,80 +119,31 @@ class User(DataItem):
     pennies = 100
     crackers = 10
 
-class Order(DataItem):
-    user_id = None
-    action = None
-    quantity = None
-    price = None
-    execution_time = None
+class Patient(DataItem):
+    name = None
 
-class Trade(DataItem):
-    buyer_id = None
-    seller_id = None
-    quantity = None
-    price = None
+# class Order(DataItem):
+#     user_id = None
+#     action = None
+#     quantity = None
+#     price = None
+#     execution_time = None
 
-class MarketData(DataItem):
-    # The ID for this one is always "crackers"
-    bid_price = None
-    ask_price = None
-    high_price = None
-    low_price = None
+# class Trade(DataItem):
+#     buyer_id = None
+#     seller_id = None
+#     quantity = None
+#     price = None
+
+# class MarketData(DataItem):
+#     # The ID for this one is always "crackers"
+#     bid_price = None
+#     ask_price = None
+#     high_price = None
+#     low_price = None
 
 def unique_id():
     uuid_bytes = _uuid.uuid4().bytes
     uuid_bytes = uuid_bytes[-4:]
 
     return _binascii.hexlify(uuid_bytes).decode("utf-8")
-
-def _kafka_config():
-    bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-
-    return {"bootstrap.servers": bootstrap_servers}
-
-def _kafka_consumer_config(group_id):
-    config = _kafka_config()
-    config["group.id"] = group_id
-    config["group.instance.id"] = group_id
-
-    return config
-
-def create_update_consumer(group_id):
-    config = _kafka_consumer_config(group_id)
-    config["auto.offset.reset"] = "earliest"
-    config["enable.auto.commit"] = False
-
-    consumer = _kafka.Consumer(config)
-    consumer.subscribe(["updates"])
-
-    return consumer
-
-def create_order_consumer(group_id):
-    consumer = _kafka.Consumer(_kafka_consumer_config(group_id))
-    consumer.subscribe(["orders"])
-
-    return consumer
-
-def consume_items(consumer):
-    while True:
-        message = consumer.poll(1)
-
-        if message is None:
-            continue
-
-        if message.error():
-            print(f"Consumer error: {message.error()}")
-            continue
-
-        try:
-            yield DataItem.object(message.value())
-        except:
-            _traceback.print_exc()
-
-_producer = _kafka.Producer(_kafka_config())
-
-def produce_item(topic, item, flush=True):
-    _producer.produce(topic, item.bytes())
-
-    if flush:
-        _producer.flush()
