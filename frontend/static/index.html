@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Trade Zoo</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/main.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" defer="defer">
+    <script src="/static/gesso.js"></script>
+    <script src="/static/main.js"></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <a id="logotype" href="">
+          <span class="material-icons-outlined">swap_horiz</span>
+          Trade Zoo
+        </a>
+        <nav id="global-nav">
+          <a>Hi, <b id="user">-</b></a>
+          <a id="reset" href="/"><span class="material-icons-outlined">refresh</span></a>
+        </nav>
+      </div>
+    </header>
+    <section>
+      <div>
+
+<div id="top-tile">
+  <div>
+    <h2>Positions</h2>
+
+    <div id="positions">
+      <div>
+        <h4>Pennies</h4>
+        <div id="pennies">-</div>
+      </div>
+
+      <div>
+        <h4>Crackers</h4>
+        <div id="crackers">-</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Offer to buy or sell a cracker</h2>
+
+    <form id="order-form" method="post" action="/api/submit-order">
+      <div>
+        <h4>Price</h4>
+        <input name="price" type="number" min="1" value="10" required="required" onclick="this.select()"/>
+      </div>
+
+      <div>
+        <h4>Actions</h4>
+        <div class="hflex">
+          <button name="action" type="submit" value="buy">Buy</button>
+          <button name="action" type="submit" value="sell">Sell</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div>
+    <h2>Market prices</h2>
+
+    <div id="market-prices">
+      <div>
+        <h4>Bid</h4>
+        <div id="bid">-</div>
+      </div>
+
+      <div>
+        <h4>Ask</h4>
+        <div id="ask">-</div>
+      </div>
+
+      <div>
+        <h4>High</h4>
+        <div id="high">-</div>
+      </div>
+
+      <div>
+        <h4>Low</h4>
+        <div id="low">-</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="bottom-tile">
+  <div id="order-tile">
+    <h2>Open orders</h2>
+
+    <div id="orders"></div>
+  </div>
+
+  <div id="trade-tile">
+    <h2>Completed trades</h2>
+
+    <div id="trades"></div>
+  </div>
+</div>
+
+      </div>
+    </section>
+    <footer>
+      <div>
+        <a id="admin-link" href="/admin">Admin</a>
+      </div>
+    </footer>
+  </body>
+</html>
