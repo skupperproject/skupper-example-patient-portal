@@ -72,10 +72,12 @@ def process_notifications():
                     if select.select([conn], [], [], 5) != ([], [], []):
                         conn.poll()
 
-                        while conn.notifies:
+                        if conn.notifies:
+                            conn.notifies.clear()
+
                             with lock:
                                 for queue in notification_queues:
-                                    asyncio.run(queue.put(conn.notifies.pop(0)))
+                                    asyncio.run(queue.put(""))
         except:
             traceback.print_exc()
             time.sleep(1)
