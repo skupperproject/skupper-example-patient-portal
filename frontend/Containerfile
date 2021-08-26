@@ -1,6 +1,6 @@
 FROM registry.fedoraproject.org/fedora-minimal:34
 
-RUN microdnf -y install python3 python3-psycopg2 && microdnf clean all
+RUN microdnf -y install postgresql python3 python3-psycopg2 && microdnf clean all
 
 RUN pip3 install starlette sse_starlette uvicorn
 

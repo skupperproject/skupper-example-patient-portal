@@ -48,13 +48,13 @@ def log(message):
 database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
 database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
 
-print("database host and port", database_host, database_port)
-
-database = psycopg2.connect(host=database_host,
+def connect():
+    conn = psycopg2.connect(host=database_host,
                             port=database_port,
                             database="patient_portal",
                             user="patient_portal",
                             password="secret")
+    return conn
 
 print("database connected")
 
@@ -113,7 +113,7 @@ async def get_data(request):
 
     # return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
 
-    with database.cursor() as cur:
+    with connect().cursor() as cur:
         cur.execute("select * from patients");
         records = cur.fetchall()
 
