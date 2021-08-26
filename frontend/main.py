@@ -17,6 +17,8 @@
 # under the License.
 #
 
+print("pol")
+
 import asyncio
 import os
 import psycopg2
@@ -46,11 +48,15 @@ def log(message):
 database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
 database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
 
+print("database host and port", database_host, database_port)
+
 database = psycopg2.connect(host=database_host,
                             port=database_port,
                             database="patient_portal",
                             user="patient_portal",
                             password="secret")
+
+print("database connected")
 
 # def process_updates():
 #     while True:
@@ -76,6 +82,8 @@ database = psycopg2.connect(host=database_host,
 
 http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
 http_port = int(os.environ.get("HTTP_PORT", 8080))
+
+print("http host and port", http_host, http_port)
 
 star = Starlette(debug=True)
 star.mount("/static", StaticFiles(directory="static"), name="static")

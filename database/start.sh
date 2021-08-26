@@ -1,7 +1,6 @@
 #!/bin/bash
 
-exec podman run -t \
-       --net host \
+exec podman run --name patient-portal-database --detach --net host \
        -e POSTGRES_USER=patient_portal \
        -e POSTGRES_PASSWORD=secret \
        -e POSTGRES_HOST_AUTH_METHOD=scram-sha-256 \
