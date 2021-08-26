@@ -17,13 +17,14 @@
 # under the License.
 #
 
-print("pol")
-
 import asyncio
 import os
 import psycopg2
+import psycopg2.extensions
+import select
 import threading
 import time
+import traceback
 import uvicorn
 
 from sse_starlette.sse import EventSourceResponse
@@ -37,8 +38,8 @@ from data import *
 
 process_id = f"frontend-{unique_id()}"
 
-store = DataStore()
-data_request_queues = set()
+notification_queues = set()
+lock = threading.Lock()
 
 def log(message):
     print(f"{process_id}: {message}")
@@ -54,36 +55,35 @@ def connect():
                             database="patient_portal",
                             user="patient_portal",
                             password="secret")
+
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
     return conn
 
-print("database connected")
+def process_notifications():
+    while True:
+        conn = connect()
 
-# def process_updates():
-#     while True:
-#         log("tick")
-#         time.sleep(1) # XXX Sucks
+        try:
+            with conn.cursor() as cur:
+                cur.execute("listen patients")
 
-#         with database.cursor() as cur:
-#             print("before execute")
-#             cur.execute("select * from patients");
-#             print("after execute")
-#             records = cur.fetchall()
-#             print("after fetchall")
+                while True:
+                    if select.select([conn], [], [], 5) != ([], [], []):
+                        conn.poll()
 
-#         for record in records:
-#             patient = Patient(id=None) # XXX
-#             patient.name = record[0]
-
-#             store.put(patient)
-
-#             log(patient)
+                        while conn.notifies:
+                            with lock:
+                                for queue in notification_queues:
+                                    asyncio.run(queue.put(conn.notifies.pop(0)))
+        except:
+            traceback.print_exc()
+            time.sleep(1)
 
 ## HTTP
 
 http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
 http_port = int(os.environ.get("HTTP_PORT", 8080))
-
-print("http host and port", http_host, http_port)
 
 star = Starlette(debug=True)
 star.mount("/static", StaticFiles(directory="static"), name="static")
@@ -92,43 +92,34 @@ star.mount("/static", StaticFiles(directory="static"), name="static")
 async def get_index(request):
     return FileResponse("static/index.html")
 
+@star.route("/api/notifications")
+async def get_notifications(request):
+    queue = asyncio.Queue()
+
+    async def generate():
+        with lock:
+            notification_queues.add(queue)
+
+        while True:
+            await queue.get()
+            yield {"data": "[]"}
+
+    async def cleanup():
+        with lock:
+            notification_queues.remove(queue)
+
+    return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
+
 @star.route("/api/data")
 async def get_data(request):
-    # queue = asyncio.Queue()
-
-    # async def generate():
-    #     for item in store.get():
-    #         if item.deletion_time is not None:
-    #             continue
-
-    #         yield {"data": item.json()}
-
-    #     data_request_queues.add(queue)
-
-    #     while True:
-    #         yield {"data": (await queue.get()).json()}
-
-    # async def cleanup():
-    #     data_request_queues.remove(queue)
-
-    # return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
-
     with connect().cursor() as cur:
-        cur.execute("select * from patients");
-        records = cur.fetchall()
+        cur.execute("select * from patients order by name");
+        patient_records = cur.fetchall()
 
-    patient_data = dict()
-
-    for record in records:
-        patient = Patient(id=None) # XXX
-        patient.name = record[0]
-
-        patient_data[patient.id] = patient.data()
-
-    return JSONResponse({"data": {"patients": patient_data}})
+    return JSONResponse({"data": {"patients": patient_records}})
 
 if __name__ == "__main__":
-    # update_thread = threading.Thread(target=process_updates, daemon=True)
-    # update_thread.start()
+    update_thread = threading.Thread(target=process_notifications, daemon=True)
+    update_thread.start()
 
     uvicorn.run(star, host=http_host, port=http_port, log_level="info")

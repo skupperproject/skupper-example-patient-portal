@@ -23,15 +23,7 @@
 
 window.addEventListener("load", () => {
     const gesso = new Gesso();
-    // const dataSource = new EventSource("/api/data");
-    // const data = new Map();
-
-    // data.set("User", new Map());
-    // data.set("Order", new Map());
-    // data.set("Trade", new Map());
-    // data.set("MarketData", new Map());
-
-    const userId = new URLSearchParams(window.location.search).get("user");
+    const dataSource = new EventSource("/api/notifications");
 
     function cap(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -52,15 +44,13 @@ window.addEventListener("load", () => {
         })
             .then(response => response.json())
             .then(data => {
-                const patients = data["data"]["patients"];
-                const headings = ["Name"]; // , "User", "Offer", "Price", "Actions"];
+                const records = data["data"]["patients"];
+                const headings = ["ID", "Name", "Age"];
                 const rows = new Array();
 
-                for (let patient of Object.values(patients)) {
-                    rows.push([patient.name]);
+                for (let record of records) {
+                    rows.push(record);
                 }
-
-                rows.reverse();
 
                 const div = gesso.createDiv(null, "#patients");
 
@@ -74,50 +64,8 @@ window.addEventListener("load", () => {
 
     renderPatients();
 
-    // dataSource.onmessage = event => {
-    //     const item = JSON.parse(event.data);
-
-    //     data.get(item.class).set(item.id, item);
-
-    //     switch (item.class) {
-    //     // case "User":
-    //     //     renderUser();
-    //     //     break;
-    //     case "Patient":
-    //         renderPatients();
-    //         break;
-    //     }
-    // };
-
-    // $("#order-form").addEventListener("submit", event => {
-    //     event.preventDefault();
-
-    //     const data = {
-    //         "user_id": userId,
-    //         "action": event.submitter.value,
-    //         "quantity": 1,
-    //         "price": parseInt(event.target.price.value),
-    //     }
-
-    //     fetch("/api/submit-order", {
-    //         method: "POST",
-    //         headers: {"Content-Type": "application/json"},
-    //         body: JSON.stringify(data),
-    //     }).then(response => response.json());
-    // });
-
-    // $("#admin-link").addEventListener("click", event => {
-    //     const password = prompt("Password");
-
-    //     if (password === null) {
-    //         event.preventDefault();
-    //         return;
-    //     }
-
-    //     if (password == "animal") {
-    //         event.preventDefault();
-    //         window.location.href = "/admin?user=animal";
-    //         return;
-    //     }
-    // });
+    dataSource.onmessage = event => {
+        const item = JSON.parse(event.data);
+        renderPatients();
+    };
 });
