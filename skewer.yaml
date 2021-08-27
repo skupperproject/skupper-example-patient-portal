@@ -2,7 +2,7 @@ title: Patient Portal with PostgreSQL and Skupper
 subtitle: A simple database-backed web application that runs in the public cloud but keeps its data in a private database
 github_actions_url: https://github.com/skupperproject/skupper-example-patient-portal/actions/workflows/main.yaml
 overview: |
-  XXX
+  XXX postgresql (for psql), podman
 prerequisites: !string prerequisites
 contexts:
   public:

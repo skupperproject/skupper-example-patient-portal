@@ -19,10 +19,6 @@
 
 import asyncio
 import os
-import psycopg2
-import psycopg2.extensions
-import select
-import threading
 import time
 import traceback
 import uvicorn
@@ -33,54 +29,36 @@ from starlette.background import BackgroundTask
 from starlette.responses import Response, FileResponse, JSONResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from animalid import generate_animal_id
 from data import *
 
 process_id = f"frontend-{unique_id()}"
-
-notification_queues = set()
-lock = threading.Lock()
 
 def log(message):
     print(f"{process_id}: {message}")
 
 ## Database
 
-database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
-database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
+# def process_notifications():
+#     while True:
+#         conn = connect()
 
-def connect():
-    conn = psycopg2.connect(host=database_host,
-                            port=database_port,
-                            database="patient_portal",
-                            user="patient_portal",
-                            password="secret")
+#         try:
+#             with conn.cursor() as cur:
+#                 cur.execute("listen patients")
 
-    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+#                 while True:
+#                     if select.select([conn], [], [], 5) != ([], [], []):
+#                         conn.poll()
 
-    return conn
+#                         if conn.notifies:
+#                             conn.notifies.clear()
 
-def process_notifications():
-    while True:
-        conn = connect()
-
-        try:
-            with conn.cursor() as cur:
-                cur.execute("listen patients")
-
-                while True:
-                    if select.select([conn], [], [], 5) != ([], [], []):
-                        conn.poll()
-
-                        if conn.notifies:
-                            conn.notifies.clear()
-
-                            with lock:
-                                for queue in notification_queues:
-                                    asyncio.run(queue.put(""))
-        except:
-            traceback.print_exc()
-            time.sleep(1)
+#                             with lock:
+#                                 for queue in notification_queues:
+#                                     asyncio.run(queue.put(""))
+#         except:
+#             traceback.print_exc()
+#             time.sleep(1)
 
 ## HTTP
 
@@ -96,32 +74,24 @@ async def get_index(request):
 
 @star.route("/api/notifications")
 async def get_notifications(request):
-    queue = asyncio.Queue()
-
     async def generate():
-        with lock:
-            notification_queues.add(queue)
+        async with await connect() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute("listen patients")
 
-        while True:
-            await queue.get()
-            yield {"data": "[]"}
+                async for notify in conn.notifies():
+                    yield {"data": "1"}
 
-    async def cleanup():
-        with lock:
-            notification_queues.remove(queue)
-
-    return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
+    return EventSourceResponse(generate())
 
 @star.route("/api/data")
 async def get_data(request):
-    with connect().cursor() as cur:
-        cur.execute("select * from patients order by name");
-        patient_records = cur.fetchall()
+    async with await connect() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute("select name, age from patients order by name, id");
+            patient_records = await cur.fetchall()
 
     return JSONResponse({"data": {"patients": patient_records}})
 
 if __name__ == "__main__":
-    update_thread = threading.Thread(target=process_notifications, daemon=True)
-    update_thread.start()
-
     uvicorn.run(star, host=http_host, port=http_port, log_level="info")
