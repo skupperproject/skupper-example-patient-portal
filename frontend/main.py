@@ -36,32 +36,6 @@ process_id = f"frontend-{unique_id()}"
 def log(message):
     print(f"{process_id}: {message}")
 
-## Database
-
-# def process_notifications():
-#     while True:
-#         conn = connect()
-
-#         try:
-#             with conn.cursor() as cur:
-#                 cur.execute("listen patients")
-
-#                 while True:
-#                     if select.select([conn], [], [], 5) != ([], [], []):
-#                         conn.poll()
-
-#                         if conn.notifies:
-#                             conn.notifies.clear()
-
-#                             with lock:
-#                                 for queue in notification_queues:
-#                                     asyncio.run(queue.put(""))
-#         except:
-#             traceback.print_exc()
-#             time.sleep(1)
-
-## HTTP
-
 http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
 http_port = int(os.environ.get("HTTP_PORT", 8080))
 
@@ -75,21 +49,19 @@ async def get_index(request):
 @star.route("/api/notifications")
 async def get_notifications(request):
     async def generate():
-        async with await connect() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("listen patients")
+        async with await cursor() as cur:
+            await cur.execute("listen patients")
 
-                async for notify in conn.notifies():
-                    yield {"data": "1"}
+            async for notify in cur.connection.notifies():
+                yield {"data": "1"}
 
     return EventSourceResponse(generate())
 
 @star.route("/api/data")
 async def get_data(request):
-    async with await connect() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute("select name, age from patients order by name, id");
-            patient_records = await cur.fetchall()
+    async with await cursor() as cur:
+        await cur.execute("select id, name, age from patients order by name, id");
+        patient_records = await cur.fetchall()
 
     return JSONResponse({"data": {"patients": patient_records}})
 
