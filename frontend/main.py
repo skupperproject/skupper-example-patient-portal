@@ -33,9 +33,6 @@ process_id = f"frontend-{unique_id()}"
 def log(message):
     print(f"{process_id}: {message}")
 
-http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
-http_port = int(os.environ.get("HTTP_PORT", 8080))
-
 star = Starlette(debug=True)
 star.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -47,7 +44,7 @@ async def get_index(request):
 async def get_notifications(request):
     async def generate():
         async with await cursor() as cur:
-            await cur.execute("listen patients")
+            await cur.execute("listen changes")
 
             async for notify in cur.connection.notifies():
                 yield {"data": "1"}
@@ -63,4 +60,7 @@ async def get_data(request):
     return JSONResponse({"data": {"patients": patient_records}})
 
 if __name__ == "__main__":
-    uvicorn.run(star, host=http_host, port=http_port, log_level="info")
+    host = os.environ.get("HTTP_HOST", "0.0.0.0")
+    port = int(os.environ.get("HTTP_PORT", 8080))
+
+    uvicorn.run(star, host=host, port=port, log_level="info")
