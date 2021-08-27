@@ -24,15 +24,22 @@ import uuid as _uuid
 
 database_host = _os.environ.get("DATABASE_SERVICE_HOST", "localhost")
 database_port = _os.environ.get("DATABASE_SERVICE_PORT", "5432")
+database_conn = None
 
-async def cursor():
-    conn = await _psycopg.AsyncConnection.connect(host=database_host,
+async def connect():
+    return await _psycopg.AsyncConnection.connect(host=database_host,
                                                   port=database_port,
                                                   user="patient_portal",
                                                   password="secret",
                                                   autocommit=True)
 
-    return conn.cursor()
+async def cursor():
+    global database_conn
+
+    if database_conn is None or database_conn.closed:
+        database_conn = await connect()
+
+    return database_conn.cursor()
 
 def unique_id():
     uuid_bytes = _uuid.uuid4().bytes

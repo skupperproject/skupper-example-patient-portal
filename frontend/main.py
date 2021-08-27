@@ -17,10 +17,7 @@
 # under the License.
 #
 
-import asyncio
 import os
-import time
-import traceback
 import uvicorn
 
 from sse_starlette.sse import EventSourceResponse
