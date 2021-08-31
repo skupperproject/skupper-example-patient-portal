@@ -43,10 +43,10 @@ async def get_index(request):
 @star.route("/api/notifications")
 async def get_notifications(request):
     async def generate():
-        async with await cursor() as cur:
-            await cur.execute("listen changes")
+        async with await cursor() as curs:
+            await curs.execute("listen changes")
 
-            async for notify in cur.connection.notifies():
+            async for notify in curs.connection.notifies():
                 yield {"data": "1"}
 
     return EventSourceResponse(generate())
