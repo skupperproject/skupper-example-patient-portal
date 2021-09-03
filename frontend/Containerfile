@@ -2,7 +2,7 @@ FROM registry.fedoraproject.org/fedora-minimal:34
 
 RUN microdnf -y install git libpq postgresql python3 && microdnf clean all
 
-RUN pip3 install starlette sse_starlette uvicorn
+RUN pip3 install psycopg_pool starlette sse_starlette uvicorn
 RUN pip3 install git+https://github.com/psycopg/psycopg.git#subdirectory=psycopg
 
 ADD main.py /app/main.py

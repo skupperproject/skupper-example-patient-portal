@@ -148,3 +148,52 @@ button:hover {
     margin-top: 0;
     margin-bottom: 0;
 }
+
+/* --- */
+
+.tabs {
+}
+
+.tabs > nav {
+    diplay: flex;
+    margin-top: -0.4em;
+    margin-bottom: 1.6em;
+}
+
+.tabs > nav > a {
+    display: inline-block;
+    padding: 0.4em 0;
+    margin-right: 2em;
+    color: #666;
+}
+
+.tabs > nav > a:hover,
+.tabs > nav > a.selected {
+    border-bottom: 1.5px solid black;
+    color: black;
+}
+
+.tabs > div {
+    display: none;
+}
+
+/* --- */
+
+nav.entry {
+    margin-bottom: 1em;
+}
+
+nav.entry > * {
+    display: block;
+}
+
+/* --- */
+
+#patient-name,
+#doctor-name {
+    font-weight: 600;
+}
+
+#log-out-link {
+    margin-left: 2em;
+}

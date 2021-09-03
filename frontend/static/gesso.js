@@ -28,6 +28,16 @@ Element.prototype.$$ = function () {
   return this.querySelectorAll.apply(this, arguments);
 };
 
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function nvl(value, replacement) {
+    if (value === null || value === undefined) {
+        return replacement;
+    }
+}
+
 class Gesso {
     parseQueryString(str) {
         if (str.startsWith("?")) {

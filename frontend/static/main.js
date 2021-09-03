@@ -1,71 +1,90 @@
-/*
- *
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- *
- */
+import * as entry from "./entry.js";
+import * as doctor from "./doctor.js";
+import * as patient from "./patient.js";
 
 "use strict";
 
+const routes = {
+    "/": entry.page,
+    "/patient": patient.page,
+    "/doctor": doctor.page,
+};
+
+window.addEventListener("popstate", () => {
+    $("#content").innerHTML = routes[window.location.pathname];
+    window.dispatchEvent(new Event("statechange"));
+});
+
 window.addEventListener("load", () => {
-    const gesso = new Gesso();
-    const dataSource = new EventSource("/api/notifications");
+    $("#content").innerHTML = routes[window.location.pathname];
+    window.dispatchEvent(new Event("statechange"));
+});
 
-    function cap(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
+window.addEventListener("click", event => {
+    if (event.target.tagName === "A") {
+        event.preventDefault();
+
+        const url = new URL(event.target.href, window.location);
+
+        if (url.href != window.location.href) {
+            $("#content").innerHTML = routes[url.pathname];
+
+            window.history.pushState({}, null, url);
+            window.dispatchEvent(new Event("statechange"));
+        }
     }
+});
 
-    function nvl(value, replacement) {
-        if (value === null || value === undefined) {
-            return replacement;
+function updateTabs() {
+    const url = new URL(window.location);
+    const selectedTabId = url.hash.slice(1);
+
+    for (let tabs of $$(".tabs")) {
+        if (!selectedTabId) {
+            tabs.$(":scope > nav > a").classList.add("selected");
+            tabs.$(":scope > div").style.display = "inherit";
+            continue;
         }
 
-        return value;
+        for (let link of tabs.$$(":scope > nav > a")) {
+            if (link.href == url.href) {
+                link.classList.add("selected");
+            } else {
+                link.classList.remove("selected");
+            }
+        }
+
+        for (let pane of tabs.$$(":scope > div")) {
+            if (pane.id == selectedTabId) {
+                pane.style.display = "inherit";
+            } else {
+                pane.style.display = "none";
+            }
+        }
     }
+}
 
-    function renderPatients() {
-        fetch("/api/data", {
-            method: "GET",
-            headers: {"Content-Type": "application/json"},
-        })
-            .then(response => response.json())
-            .then(data => {
-                const records = data["data"]["patients"];
-                const headings = ["ID", "Name", "Age"];
-                const rows = new Array();
+function render() {
+    updateTabs();
 
-                for (let record of records) {
-                    rows.push(record);
-                }
+    fetch("/api/data", {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    })
+        .then(response => response.json())
+        .then(data => {
+            patient.render(data);
+            doctor.render(data);
+        });
+}
 
-                const div = gesso.createDiv(null, "#patients");
-
-                if (rows.length) {
-                    gesso.createTable(div, headings, rows);
-                }
-
-                gesso.replaceElement($("#patients"), div);
-            });
-    }
-
-    renderPatients();
-
-    dataSource.onmessage = event => {
-        const item = JSON.parse(event.data);
-        renderPatients();
-    };
+window.addEventListener("statechange", () => {
+    render();
 });
+
+const dataSource = new EventSource("/api/notifications");
+
+dataSource.onmessage = event => {
+    const item = JSON.parse(event.data); // XXX
+    window.dispatchEvent(new Event("statechange"));
+};

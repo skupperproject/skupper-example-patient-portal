@@ -37,27 +37,36 @@ star = Starlette(debug=True)
 star.mount("/static", StaticFiles(directory="static"), name="static")
 
 @star.route("/")
+@star.route("/patient")
+@star.route("/doctor")
 async def get_index(request):
     return FileResponse("static/index.html")
 
 @star.route("/api/notifications")
 async def get_notifications(request):
     async def generate():
-        async with await cursor() as curs:
-            await curs.execute("listen changes")
+        async with await connect() as conn:
+            async with conn.cursor() as curs:
+                await curs.execute("listen changes")
 
-            async for notify in curs.connection.notifies():
-                yield {"data": "1"}
+                async for notify in conn.notifies():
+                    yield {"data": "1"}
 
     return EventSourceResponse(generate())
 
 @star.route("/api/data")
 async def get_data(request):
     async with await cursor() as cur:
-        await cur.execute("select id, name, age from patients order by name, id");
+        await cur.execute("select id, name, zip, phone, email from patients order by name, id");
         patient_records = await cur.fetchall()
 
-    return JSONResponse({"data": {"patients": patient_records}})
+        await cur.execute("select id, name, phone, email from doctors order by name, id");
+        doctor_records = await cur.fetchall()
+
+    return JSONResponse({"data": {
+        "patients": patient_records,
+        "doctors": doctor_records
+    }})
 
 if __name__ == "__main__":
     host = os.environ.get("HTTP_HOST", "0.0.0.0")
