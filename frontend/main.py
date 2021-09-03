@@ -20,6 +20,7 @@
 import os
 import uvicorn
 
+from psycopg_pool import AsyncConnectionPool
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
 from starlette.background import BackgroundTask
@@ -30,10 +31,23 @@ from data import *
 
 process_id = f"frontend-{unique_id()}"
 
+database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
+database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
+database_url = f"postgresql://patient_portal:secret@{database_host}:{database_port}/patient_portal"
+
+pool = None
+
 def log(message):
     print(f"{process_id}: {message}")
 
-star = Starlette(debug=True)
+async def startup():
+    global pool
+    pool = AsyncConnectionPool(database_url)
+
+async def shutdown():
+    await pool.close()
+
+star = Starlette(debug=True, on_startup=[startup], on_shutdown=[shutdown])
 star.mount("/static", StaticFiles(directory="static"), name="static")
 
 @star.route("/")
@@ -45,23 +59,22 @@ async def get_index(request):
 @star.route("/api/notifications")
 async def get_notifications(request):
     async def generate():
-        async with await connect() as conn:
-            async with conn.cursor() as curs:
-                await curs.execute("listen changes")
+        async with pool.connection() as conn:
+            await conn.execute("listen changes")
 
-                async for notify in conn.notifies():
-                    yield {"data": "1"}
+            async for notify in conn.notifies():
+                yield {"data": "1"}
 
     return EventSourceResponse(generate())
 
 @star.route("/api/data")
 async def get_data(request):
-    async with await cursor() as cur:
-        await cur.execute("select id, name, zip, phone, email from patients order by name, id");
-        patient_records = await cur.fetchall()
+    async with pool.connection() as conn:
+        curs = await conn.execute("select id, name, zip, phone, email from patients order by name, id");
+        patient_records = await curs.fetchall()
 
-        await cur.execute("select id, name, phone, email from doctors order by name, id");
-        doctor_records = await cur.fetchall()
+        curs = await conn.execute("select id, name, phone, email from doctors order by name, id");
+        doctor_records = await curs.fetchall()
 
     return JSONResponse({"data": {
         "patients": patient_records,
@@ -69,7 +82,7 @@ async def get_data(request):
     }})
 
 if __name__ == "__main__":
-    host = os.environ.get("HTTP_HOST", "0.0.0.0")
-    port = int(os.environ.get("HTTP_PORT", 8080))
+    http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
+    http_port = int(os.environ.get("HTTP_PORT", 8080))
 
-    uvicorn.run(star, host=host, port=port, log_level="info")
+    uvicorn.run(star, host=http_host, port=http_port, log_level="info")

@@ -3,10 +3,10 @@ const gesso = new Gesso();
 export const page = `
 <header>
   <div>
-    <a id="logotype" href="/">
+    <div>
       <span class="material-icons-outlined">medical_services</span>
       Patient Portal
-    </a>
+    </div>
     <nav id="global-nav">
       <a>Doctor <span id="doctor-name">-</span></a>
       <a id="log-out-link" href="/">Log out</a>
