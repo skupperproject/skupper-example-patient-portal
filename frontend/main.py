@@ -53,6 +53,7 @@ star.mount("/static", StaticFiles(directory="static"), name="static")
 @star.route("/")
 @star.route("/patient")
 @star.route("/doctor")
+@star.route("/appointment/create")
 async def get_index(request):
     return FileResponse("static/index.html")
 
@@ -70,16 +71,28 @@ async def get_notifications(request):
 @star.route("/api/data")
 async def get_data(request):
     async with pool.connection() as conn:
-        curs = await conn.execute("select id, name, zip, phone, email from patients order by name, id");
+        curs = await conn.execute("select id, name, zip, phone, email from patients order by name, id")
         patient_records = await curs.fetchall()
 
-        curs = await conn.execute("select id, name, phone, email from doctors order by name, id");
+        curs = await conn.execute("select id, name, phone, email from doctors order by name, id")
         doctor_records = await curs.fetchall()
 
     return JSONResponse({"data": {
         "patients": patient_records,
         "doctors": doctor_records
     }})
+
+@star.route("/api/appointment")
+async def post_appointment(request):
+    async with pool.connection() as conn:
+        await conn.execute("insert into appointments (start_time, end_time, patient_id, doctor_id)"
+                           "values ('2022-03-28 17:40:00', '2022-03-28 18:00:00', 1, 1)")
+
+    return JSONResponse({"error": None})
+
+@star.route("/api/appointment-request", methods=["POST"])
+async def post_appointment_request(request):
+    pass
 
 if __name__ == "__main__":
     http_host = os.environ.get("HTTP_HOST", "0.0.0.0")

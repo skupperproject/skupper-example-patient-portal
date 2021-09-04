@@ -1,3 +1,4 @@
+import * as appointment from "./appointment.js";
 import * as entry from "./entry.js";
 import * as doctor from "./doctor.js";
 import * as patient from "./patient.js";
@@ -8,6 +9,7 @@ const routes = {
     "/": entry.page,
     "/patient": patient.page,
     "/doctor": doctor.page,
+    "/appointment/create": appointment.createPage,
 };
 
 window.addEventListener("popstate", () => {
