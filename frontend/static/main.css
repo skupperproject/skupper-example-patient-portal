@@ -100,7 +100,7 @@ table {
     width: 100%;
 }
 
-html, body, section, section > div, #bottom-tile, #order-tile, #trade-tile {
+html, body, section, section > div {
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -108,18 +108,6 @@ html, body, section, section > div, #bottom-tile, #order-tile, #trade-tile {
 
 html, body, section, section > div {
     height: 100%;
-}
-
-#bottom-tile {
-    flex-grow: 1;
-}
-
-#order-tile, #trade-tile {
-    margin-top: 2em;
-    border-top: 1px solid var(--light-gray);
-    padding-top: 2em;
-    overflow: auto;
-    height: 50%;
 }
 
 button {
@@ -179,11 +167,11 @@ button:hover {
 
 /* --- */
 
-nav.entry {
+nav.login {
     margin-bottom: 1em;
 }
 
-nav.entry > * {
+nav.login > * {
     display: block;
 }
 
@@ -196,4 +184,17 @@ nav.entry > * {
 
 #log-out-link {
     margin-left: 2em;
+}
+
+/* --- */
+
+a.button {
+    display: inline-block;
+    border: 1px solid #999;
+    border-radius: 0.2em;
+    padding: 0.4em 0.8em;
+    text-align: center;
+    color: black;
+    font-weight: 400;
+    font-size: 0.95em;
 }

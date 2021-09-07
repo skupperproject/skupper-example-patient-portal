@@ -26,11 +26,13 @@ export const page = `
   <div id="overview">
     <h1>Welcome!</h1>
 
-    <div>
-      <h2>Your next appointment</h2>
+    <p><a class="button" id="appointment-request-create-link" href="/appointment-request/create">Request an appointment</a></p>
 
-      <p>XXX</p>
-    </div>
+    <p>Open appointment requests: <span id="appointment-request-count">0</span></p>
+
+    <p>Upcoming appointments: <span id="appointment-count">1</span></p>
+
+    <p>Your next appointment: <span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></p>
   </div>
 
   <div id="appointments">
@@ -52,16 +54,16 @@ export const page = `
 </footer>
 `;
 
-function renderNav(data) {
+function renderLoginLinks(data) {
     const records = data.data.patients;
-    const nav = gesso.createElement(null, "nav", {id: "patient-nav", class: "entry"});
+    const nav = gesso.createElement(null, "nav", {id: "patient-login-links", class: "login"});
 
     for (let record of records) {
         const href = `/patient?id=${record[0]}`;
         gesso.createLink(nav, href, record[1]);
     }
 
-    gesso.replaceElement($("#patient-nav"), nav);
+    gesso.replaceElement($("#patient-login-links"), nav);
 }
 
 function renderName(data) {
@@ -91,8 +93,8 @@ function renderTable(data) {
     gesso.replaceElement($("#patient-table"), div);
 }
 
-export function render(data) {
-    if ($("#patient-nav")) renderNav(data);
+export function update(data) {
+    if ($("#patient-login-links")) renderLoginLinks(data);
     if ($("#patient-name")) renderName(data);
     if ($("#patient-table")) renderTable(data);
 }

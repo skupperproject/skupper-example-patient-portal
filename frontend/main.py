@@ -54,6 +54,7 @@ star.mount("/static", StaticFiles(directory="static"), name="static")
 @star.route("/patient")
 @star.route("/doctor")
 @star.route("/appointment/create")
+@star.route("/appointment-request/create")
 async def get_index(request):
     return FileResponse("static/index.html")
 
@@ -82,17 +83,23 @@ async def get_data(request):
         "doctors": doctor_records
     }})
 
-@star.route("/api/appointment")
-async def post_appointment(request):
+@star.route("/api/appointment/create")
+async def post_appointment_create(request, methods=["POST"]):
     async with pool.connection() as conn:
         await conn.execute("insert into appointments (start_time, end_time, patient_id, doctor_id)"
                            "values ('2022-03-28 17:40:00', '2022-03-28 18:00:00', 1, 1)")
 
     return JSONResponse({"error": None})
 
-@star.route("/api/appointment-request", methods=["POST"])
-async def post_appointment_request(request):
-    pass
+@star.route("/api/appointment-request/create", methods=["POST"])
+async def post_appointment_request_create(request):
+    # XXX Get patient ID
+
+    async with pool.connection() as conn:
+        await conn.execute("insert into appointment_requests (patient_id, day, day_is_approximate, time_of_day)"
+                           "values (1, '2021-12-21', true, 'any')")
+
+    return JSONResponse({"error": None})
 
 if __name__ == "__main__":
     http_host = os.environ.get("HTTP_HOST", "0.0.0.0")

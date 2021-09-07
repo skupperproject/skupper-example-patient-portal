@@ -1,7 +1,7 @@
 export const createPage = `
 <section>
   <div>
-    <form id="order-form" method="post" action="/api/appointment">
+    <form id="appointment-form" method="post" action="/api/appointment">
       <div>
         <h4>XXX</h4>
         <input name="price" type="number" min="1" value="10" required="required" onclick="this.select()"/>
@@ -16,3 +16,6 @@ export const createPage = `
   </div>
 </section>
 `;
+
+export function update(data) {
+}

@@ -48,16 +48,16 @@ export const page = `
 </footer>
 `;
 
-function renderNav(data) {
+function renderLoginLinks(data) {
     const records = data.data.doctors;
-    const nav = gesso.createElement(null, "nav", {id: "doctor-nav", class: "entry"});
+    const nav = gesso.createElement(null, "nav", {id: "doctor-login-links", class: "login"});
 
     for (let record of records) {
         const href = `/doctor?id=${record[0]}`;
         gesso.createLink(nav, href, record[1]);
     }
 
-    gesso.replaceElement($("#doctor-nav"), nav);
+    gesso.replaceElement($("#doctor-login-links"), nav);
 }
 
 function renderName(data) {
@@ -87,8 +87,8 @@ function renderTable(data) {
     gesso.replaceElement($("#doctor-table"), div);
 }
 
-export function render(data) {
-    if ($("#doctor-nav")) renderNav(data);
+export function update(data) {
+    if ($("#doctor-login-links")) renderLoginLinks(data);
     if ($("#doctor-name")) renderName(data);
     if ($("#doctor-table")) renderTable(data);
 }
