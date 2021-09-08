@@ -19,20 +19,20 @@ create table doctors (
     email               varchar
 );
 
+create table appointment_requests (
+    id                  serial primary key,
+    patient_id          integer not null references patients,
+    date                date not null,
+    date_is_approximate boolean not null,
+    time_of_day         varchar not null
+);
+
 create table appointments (
     id                  serial primary key,
     patient_id          integer not null references patients,
     doctor_id           integer not null references doctors,
     date                date,
     time                time
-);
-
-create table appointment_requests (
-    id                  serial primary key,
-    patient_id          integer not null references patients,
-    date                date,
-    date_is_approximate boolean not null,
-    time_of_day         varchar not null
 );
 
 create table bills (
@@ -46,7 +46,7 @@ create table bills (
 create or replace function notify_changes() returns trigger as $$
 declare
 begin
-    raise warning 'Notifying!';
+    raise warning 'Changes!';
     notify changes;
     return new;
 end;

@@ -16,6 +16,30 @@ function renderName(data) {
     $("#patient-name").textContent = name;
 }
 
+function renderAppointmentRequestCount(data) {
+    const records = data.data.appointment_requests;
+    const count = records.length;
+    $("#appointment-request-count").textContent = count;
+}
+
+function renderAppointmentCount(data) {
+    const records = data.data.appointments;
+    const count = records.length;
+    $("#appointment-count").textContent = count;
+}
+
+function renderAppointmentTable(data) {
+    const records = data.data.appointments;
+    const headings = ["ID", "Patient", "Doctor", "Date", "Time"];
+    const div = gesso.createDiv(null, "#appointment-table");
+
+    if (records.length) {
+        gesso.createTable(div, headings, records);
+    }
+
+    gesso.replaceElement($("#appointment-table"), div);
+}
+
 function renderDoctorTable(data) {
     const records = data.data.doctors;
     const headings = ["ID", "Name", "Phone", "Email"];
@@ -54,7 +78,7 @@ class MainPage {
   <nav>
     <a href="#overview">Overview</a>
     <a href="#appointments">Appointments</a>
-    <a href="#bills">Bills</a>
+    <!-- <a href="#bills">Bills</a> -->
     <a href="#doctors">Doctors</a>
   </nav>
 
@@ -64,11 +88,11 @@ class MainPage {
 
     <p><a class="button" href="/appointment-request/create?patient=${patientId}">Request an appointment</a></p>
 
-    <p>You have <b>0</b> open appointment requests.</p>
+    <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
 
-    <p>You have <b>1</b> upcoming appointment.</p>
+    <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
 
-    <p>Your next appointment is at <b><span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></b>.</p>
+    <!-- <p>Your next appointment is at <b><span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></b>.</p> -->
   </div>
 
   <div id="appointments">
@@ -100,6 +124,9 @@ class MainPage {
     update(data) {
         main.updateTabs();
         renderName(data);
+        renderAppointmentRequestCount(data);
+        renderAppointmentCount(data);
+        renderAppointmentTable(data);
         renderDoctorTable(data);
     }
 }

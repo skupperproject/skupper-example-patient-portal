@@ -26,20 +26,20 @@ function renderDoctorLoginLinks(data) {
 
 class MainPage {
     render() {
-        $("#content").innerHTML = `
-<div>
-  <h1>Patient Portal</h1>
+        $("#content").classList.add("excursion");
 
+        $("#content").innerHTML = `
+<section>
   <div>
+    <h1>Patient Portal</h1>
+
     <h2>Log in as a patient:</h2>
     <nav id="patient-login-links"></nav>
-  </div>
 
-  <div>
     <h2>Log in as a doctor:</h2>
     <nav id="doctor-login-links"></nav>
   </div>
-</div>
+</section>
 `;
     }
 

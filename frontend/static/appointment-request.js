@@ -16,7 +16,7 @@ class CreatePage {
       <div class="form-field">
         <div>Date</div>
         <div>
-          <input type="date" name="day" value=""/>
+          <input type="date" name="date" required="required" value="2021-12-21"/>
         </div>
         <div>Your preferred date for the appointment</div>
       </div>
@@ -26,7 +26,7 @@ class CreatePage {
         <div>
           <select name="dateIsApproximate">
             <option value="no">No</option>
-            <option value="yes">Yes&nbsp;&nbsp;</option>
+            <option value="yes">Yes</option>
           </select>
         </div>
         <div>If yes, your preferred date is flexible (plus or minus two days)</div>
@@ -56,7 +56,12 @@ class CreatePage {
         $("#appointment-request-form").addEventListener("submit", event => {
             event.preventDefault();
 
-            main.post("/api/appointment-request/create", {});
+            main.post("/api/appointment-request/create", {
+                patient: parseInt(event.target.patient.value),
+                date: event.target.date.value,
+                date_is_approximate: event.target.dateIsApproximate.value === "yes",
+                time_of_day: event.target.timeOfDay.value,
+            });
 
             main.navigate(new URL(`/patient?id=${patientId}#overview`, window.location));
         });

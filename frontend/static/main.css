@@ -164,3 +164,23 @@ body.excursion > section > div {
     background-color: white;
     padding: 4em;
 }
+
+/* --- */
+
+select {
+    padding-right: 1.2em;
+}
+
+/* --- */
+
+div.fnaz {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1em;
+    margin-top: -0.5em;
+}
+
+div.fnaz > * {
+    margin: 0;
+}

@@ -2,7 +2,7 @@ import * as main from "./main.js";
 
 class CreatePage {
     render() {
-        const patientId = new URL(window.location).searchParams.get("doctor");
+        const doctorId = parseInt(new URL(window.location).searchParams.get("doctor"));
 
         $("#content").classList.add("excursion");
 
@@ -16,33 +16,27 @@ class CreatePage {
       <div class="form-field">
         <div>Patient</div>
         <div>
-          <input type="date" name="day" value=""/>
+          <select name="patient">
+            <option value="1">Angela Martin</option>
+          </select>
         </div>
-        <div>Your preferred date for the appointment</div>
+        <div>The patient for the appointment</div>
       </div>
 
       <div class="form-field">
-        <div>Date is approximate?</div>
+        <div>Date</div>
         <div>
-          <select name="dateIsApproximate">
-            <option value="no">No</option>
-            <option value="yes">Yes&nbsp;&nbsp;</option>
-          </select>
+          <input type="date" name="date" required="required" value="2021-12-21"/>
         </div>
-        <div>If yes, your preferred date is flexible (plus or minus two days)</div>
+        <div>The date of the appointment</div>
       </div>
 
       <div class="form-field">
-        <div>Time of day</div>
+        <div>Time</div>
         <div>
-          <select name="timeOfDay">
-            <option value="any">Any time</option>
-            <option value="morning">Morning</option>
-            <option value="afternoon">Afternoon</option>
-            <option value="evening">Evening</option>
-          </select>
+          <input type="time" name="time" required="required" value="09:00" step="1800"/>
         </div>
-        <div>Your preferred time of day for the appointment</div>
+        <div>The time of the appointment</div>
       </div>
 
       <div class="form-field">
@@ -53,6 +47,18 @@ class CreatePage {
 </section>
 `;
 
+        $("#appointment-form").addEventListener("submit", event => {
+            event.preventDefault();
+
+            main.post("/api/appointment/create", {
+                doctor: doctorId,
+                patient: parseInt(event.target.doctor.value),
+                date: event.target.date.value,
+                time: event.target.time.value,
+            });
+
+            main.navigate(new URL(`/doctor?id=${doctorId}#appointments`, window.location));
+        });
     }
 
     update(data) {

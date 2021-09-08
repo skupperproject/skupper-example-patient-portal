@@ -92,6 +92,8 @@ new EventSource("/api/notifications").onmessage = event => {
 };
 
 export function post(url, data) {
+    console.log("Posting data to", url, data);
+
     fetch(url, {
         method: "POST",
         headers: {"Content-Type": "application/json"},

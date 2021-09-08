@@ -28,6 +28,18 @@ function renderAppointmentRequestTable(data) {
     gesso.replaceElement($("#appointment-request-table"), div);
 }
 
+function renderAppointmentTable(data) {
+    const records = data.data.appointments;
+    const headings = ["ID", "Patient", "Doctor", "Date", "Time"];
+    const div = gesso.createDiv(null, "#appointment-table");
+
+    if (records.length) {
+        gesso.createTable(div, headings, records);
+    }
+
+    gesso.replaceElement($("#appointment-table"), div);
+}
+
 function renderPatientTable(data) {
     const records = data.data.patients;
     const headings = ["ID", "Name", "ZIP", "Phone", "Email"];
@@ -42,6 +54,8 @@ function renderPatientTable(data) {
 
 class MainPage {
     render() {
+        const doctorId = new URL(window.location).searchParams.get("id");
+
         $("#content").classList.remove("excursion");
 
         $("#content").innerHTML = `
@@ -64,7 +78,7 @@ class MainPage {
   <nav>
     <a href="#appointment-requests">Appointment requests</a>
     <a href="#appointments">Appointments</a>
-    <a href="#bills">Bills</a>
+    <!-- <a href="#bills">Bills</a> -->
     <a href="#patients">Patients</a>
   </nav>
 
@@ -75,7 +89,10 @@ class MainPage {
   </div>
 
   <div id="appointments">
-    <h1>Appointments</h1>
+    <div class="fnaz">
+      <h1>Appointments</h1>
+      <a class="button" href="/appointment/create?doctor=${doctorId}">Create appointment</a>
+    </div>
 
     <div id="appointment-table"></div>
   </div>
@@ -104,6 +121,7 @@ class MainPage {
         main.updateTabs();
         renderName(data);
         renderAppointmentRequestTable(data);
+        renderAppointmentTable(data);
         renderPatientTable(data);
     }
 }
