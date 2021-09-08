@@ -64,6 +64,7 @@ class MainPage {
   <nav>
     <a href="#appointment-requests">Appointment requests</a>
     <a href="#appointments">Appointments</a>
+    <a href="#bills">Bills</a>
     <a href="#patients">Patients</a>
   </nav>
 
@@ -77,6 +78,12 @@ class MainPage {
     <h1>Appointments</h1>
 
     <div id="appointment-table"></div>
+  </div>
+
+  <div id="bills">
+    <h1>Bills</h1>
+
+    <div id="bill-table"></div>
   </div>
 
   <div id="patients">

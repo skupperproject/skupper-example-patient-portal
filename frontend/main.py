@@ -42,7 +42,11 @@ def log(message):
 
 async def startup():
     global pool
-    pool = AsyncConnectionPool(database_url)
+
+    async def configure(conn):
+        await conn.set_autocommit(True)
+
+    pool = AsyncConnectionPool(database_url, configure=configure)
 
 async def shutdown():
     await pool.close()

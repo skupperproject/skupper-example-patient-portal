@@ -86,6 +86,7 @@ window.addEventListener("update", event => {
 });
 
 new EventSource("/api/notifications").onmessage = event => {
+    console.log("Notified!");
     // const data = JSON.parse(event.data);
     window.dispatchEvent(new Event("update"));
 };

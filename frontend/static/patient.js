@@ -54,10 +54,12 @@ class MainPage {
   <nav>
     <a href="#overview">Overview</a>
     <a href="#appointments">Appointments</a>
+    <a href="#bills">Bills</a>
     <a href="#doctors">Doctors</a>
   </nav>
 
   <div id="overview">
+
     <h1>Welcome!</h1>
 
     <p><a class="button" href="/appointment-request/create?patient=${patientId}">Request an appointment</a></p>
@@ -73,6 +75,12 @@ class MainPage {
     <h1>Appointments</h1>
 
     <div id="appointment-table"></div>
+  </div>
+
+  <div id="bills">
+    <h1>Bills</h1>
+
+    <div id="bill-table"></div>
   </div>
 
   <div id="doctors">

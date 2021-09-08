@@ -1,3 +1,4 @@
+drop table if exists bills;
 drop table if exists appointments;
 drop table if exists appointment_requests;
 drop table if exists patients;
@@ -34,9 +35,18 @@ create table appointment_requests (
     time_of_day         varchar not null
 );
 
+create table bills (
+    id                  serial primary key,
+    patient_id          integer not null references patients,
+    summary             varchar,
+    amount              integer not null default 0,
+    date_paid           date
+);
+
 create or replace function notify_changes() returns trigger as $$
 declare
 begin
+    raise warning 'Notifying!';
     notify changes;
     return new;
 end;
@@ -56,4 +66,8 @@ execute procedure notify_changes();
 
 create trigger appointment_requests_changes
 after insert or update or delete or truncate on appointment_requests
+execute procedure notify_changes();
+
+create trigger bill_changes
+after insert or update or delete or truncate on bills
 execute procedure notify_changes();
