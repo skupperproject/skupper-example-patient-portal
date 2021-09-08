@@ -1,6 +1,36 @@
+import * as main from "./main.js";
+
 const gesso = new Gesso();
 
-export const page = `
+function renderName(data) {
+    const id = parseInt(new URL(window.location).searchParams.get("id"));
+    let name;
+
+    for (let record of data.data.doctors) {
+        if (record[0] == id) {
+            name = record[1];
+            break;
+        }
+    }
+
+    $("#doctor-name").textContent = name;
+}
+
+function renderPatientTable(data) {
+    const records = data.data.patients;
+    const headings = ["ID", "Name", "ZIP", "Phone", "Email"];
+    const div = gesso.createDiv(null, "#patient-table");
+
+    if (records.length) {
+        gesso.createTable(div, headings, records);
+    }
+
+    gesso.replaceElement($("#patient-table"), div);
+}
+
+class MainPage {
+    render() {
+        $("#content").innerHTML = `
 <header>
   <div>
     <div>
@@ -47,48 +77,13 @@ export const page = `
 <footer>
 </footer>
 `;
-
-function renderLoginLinks(data) {
-    const records = data.data.doctors;
-    const nav = gesso.createElement(null, "nav", {id: "doctor-login-links", class: "login"});
-
-    for (let record of records) {
-        const href = `/doctor?id=${record[0]}`;
-        gesso.createLink(nav, href, record[1]);
     }
 
-    gesso.replaceElement($("#doctor-login-links"), nav);
-}
-
-function renderName(data) {
-    const url = new URL(window.location);
-    const id = parseInt(url.searchParams.get("id"));
-    let name;
-
-    for (let record of data.data.doctors) {
-        if (record[0] == id) {
-            name = record[1];
-            break;
-        }
+    update(data) {
+        main.updateTabs();
+        renderName(data);
+        renderPatientTable(data);
     }
-
-    $("#doctor-name").textContent = name;
 }
 
-function renderTable(data) {
-    const records = data.data.doctors;
-    const headings = ["ID", "Name", "Phone", "Email"];
-    const div = gesso.createDiv(null, "#doctor-table");
-
-    if (records.length) {
-        gesso.createTable(div, headings, records);
-    }
-
-    gesso.replaceElement($("#doctor-table"), div);
-}
-
-export function update(data) {
-    if ($("#doctor-login-links")) renderLoginLinks(data);
-    if ($("#doctor-name")) renderName(data);
-    if ($("#doctor-table")) renderTable(data);
-}
+export const mainPage = new MainPage();

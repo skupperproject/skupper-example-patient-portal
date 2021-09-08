@@ -1,6 +1,38 @@
+import * as main from "./main.js";
+
 const gesso = new Gesso();
 
-export const page = `
+function renderName(data) {
+    const id = parseInt(new URL(window.location).searchParams.get("id"));
+    let name;
+
+    for (let record of data.data.patients) {
+        if (record[0] == id) {
+            name = record[1];
+            break;
+        }
+    }
+
+    $("#patient-name").textContent = name;
+}
+
+function renderDoctorTable(data) {
+    const records = data.data.doctors;
+    const headings = ["ID", "Name", "Phone", "Email"];
+    const div = gesso.createDiv(null, "#doctor-table");
+
+    if (records.length) {
+        gesso.createTable(div, headings, records);
+    }
+
+    gesso.replaceElement($("#doctor-table"), div);
+}
+
+class MainPage {
+    render() {
+        const patientId = new URL(window.location).searchParams.get("id");
+
+        $("#content").innerHTML = `
 <header>
   <div>
     <div>
@@ -26,7 +58,7 @@ export const page = `
   <div id="overview">
     <h1>Welcome!</h1>
 
-    <p><a class="button" id="appointment-request-create-link" href="/appointment-request/create">Request an appointment</a></p>
+    <p><a class="button" href="/appointment-request/create?patient=${patientId}" >Request an appointment</a></p>
 
     <p>Open appointment requests: <span id="appointment-request-count">0</span></p>
 
@@ -53,48 +85,13 @@ export const page = `
 <footer>
 </footer>
 `;
-
-function renderLoginLinks(data) {
-    const records = data.data.patients;
-    const nav = gesso.createElement(null, "nav", {id: "patient-login-links", class: "login"});
-
-    for (let record of records) {
-        const href = `/patient?id=${record[0]}`;
-        gesso.createLink(nav, href, record[1]);
     }
 
-    gesso.replaceElement($("#patient-login-links"), nav);
-}
-
-function renderName(data) {
-    const url = new URL(window.location);
-    const id = parseInt(url.searchParams.get("id"));
-    let name;
-
-    for (let record of data.data.patients) {
-        if (record[0] == id) {
-            name = record[1];
-            break;
-        }
+    update(data) {
+        main.updateTabs();
+        renderName(data);
+        renderDoctorTable(data);
     }
-
-    $("#patient-name").textContent = name;
 }
 
-function renderTable(data) {
-    const records = data.data.patients;
-    const headings = ["ID", "Name", "ZIP", "Phone", "Email"];
-    const div = gesso.createDiv(null, "#patient-table");
-
-    if (records.length) {
-        gesso.createTable(div, headings, records);
-    }
-
-    gesso.replaceElement($("#patient-table"), div);
-}
-
-export function update(data) {
-    if ($("#patient-login-links")) renderLoginLinks(data);
-    if ($("#patient-name")) renderName(data);
-    if ($("#patient-table")) renderTable(data);
-}
+export const mainPage = new MainPage();

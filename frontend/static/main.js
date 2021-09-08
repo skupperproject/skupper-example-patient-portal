@@ -4,29 +4,35 @@ import * as doctor from "./doctor.js";
 import * as login from "./login.js";
 import * as patient from "./patient.js";
 
+let currentPage;
+
 const routes = {
-    "/": login.page,
-    "/patient": patient.page,
-    "/doctor": doctor.page,
+    "/": login.mainPage,
+    "/patient": patient.mainPage,
+    "/doctor": doctor.mainPage,
     "/appointment/create": appointment.createPage,
     "/appointment-request/create": appointmentRequest.createPage,
 };
 
-export function navigate(url) {
-    $("#content").innerHTML = routes[url.pathname];
+function routeRequest(path) {
+    currentPage = routes[path];
 
+    currentPage.render();
+
+    window.dispatchEvent(new Event("update"));
+}
+
+export function navigate(url) {
     window.history.pushState({}, null, url);
-    window.dispatchEvent(new Event("statechange"));
+    routeRequest(url.pathname);
 }
 
 window.addEventListener("popstate", () => {
-    $("#content").innerHTML = routes[window.location.pathname];
-    window.dispatchEvent(new Event("statechange"));
+    routeRequest(window.location.pathname);
 });
 
 window.addEventListener("load", () => {
-    $("#content").innerHTML = routes[window.location.pathname];
-    window.dispatchEvent(new Event("statechange"));
+    routeRequest(window.location.pathname);
 });
 
 window.addEventListener("click", event => {
@@ -41,62 +47,51 @@ window.addEventListener("click", event => {
     }
 });
 
-window.addEventListener("statechange", () => {
-    function updateTabs() {
-        const url = new URL(window.location);
-        const selectedTabId = url.hash.slice(1);
+export function updateTabs() {
+    const url = new URL(window.location);
+    const selectedTabId = url.hash.slice(1);
 
-        for (let tabs of $$(".tabs")) {
-            if (!selectedTabId) {
-                tabs.$(":scope > nav > a").classList.add("selected");
-                tabs.$(":scope > div").style.display = "inherit";
-                continue;
+    for (let tabs of $$(".tabs")) {
+        if (!selectedTabId) {
+            tabs.$(":scope > nav > a").classList.add("selected");
+            tabs.$(":scope > div").style.display = "inherit";
+            continue;
+        }
+
+        for (let link of tabs.$$(":scope > nav > a")) {
+            if (link.href == url.href) {
+                link.classList.add("selected");
+            } else {
+                link.classList.remove("selected");
             }
+        }
 
-            for (let link of tabs.$$(":scope > nav > a")) {
-                if (link.href == url.href) {
-                    link.classList.add("selected");
-                } else {
-                    link.classList.remove("selected");
-                }
-            }
-
-            for (let pane of tabs.$$(":scope > div")) {
-                if (pane.id == selectedTabId) {
-                    pane.style.display = "inherit";
-                } else {
-                    pane.style.display = "none";
-                }
+        for (let pane of tabs.$$(":scope > div")) {
+            if (pane.id == selectedTabId) {
+                pane.style.display = "inherit";
+            } else {
+                pane.style.display = "none";
             }
         }
     }
+}
 
-    function update() {
-        updateTabs();
-
-        fetch("/api/data", {
-            method: "GET",
-            headers: {"Content-Type": "application/json"},
-        })
-            .then(response => response.json())
-            .then(data => {
-                patient.update(data);
-                doctor.update(data);
-                appointment.update(data);
-                appointmentRequest.update(data);
-            });
-    }
-
-    update();
+window.addEventListener("update", event => {
+    fetch("/api/data", {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    })
+        .then(response => response.json())
+        .then(data => currentPage.update(data));
 });
 
 new EventSource("/api/notifications").onmessage = event => {
-    const data = JSON.parse(event.data);
-    window.dispatchEvent(new Event("statechange"));
+    // const data = JSON.parse(event.data);
+    window.dispatchEvent(new Event("update"));
 };
 
 export function post(url, data) {
-    fetch("/api/appointment-request/create", {
+    fetch(url, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data),

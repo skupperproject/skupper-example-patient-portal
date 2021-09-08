@@ -1,4 +1,8 @@
-export const createPage = `
+import * as main from "./main.js";
+
+class CreatePage {
+    render() {
+        $("#content").innerHTML = `
 <section>
   <div>
     <form id="appointment-form" method="post" action="/api/appointment">
@@ -16,6 +20,10 @@ export const createPage = `
   </div>
 </section>
 `;
+    }
 
-export function update(data) {
+    update(data) {
+    }
 }
+
+export const createPage = new CreatePage();
