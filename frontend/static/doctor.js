@@ -16,6 +16,18 @@ function renderName(data) {
     $("#doctor-name").textContent = name;
 }
 
+function renderAppointmentRequestTable(data) {
+    const records = data.data.appointment_requests;
+    const headings = ["ID", "Patient", "Day", "Day is approximate?", "Time of day"];
+    const div = gesso.createDiv(null, "#appointment-request-table");
+
+    if (records.length) {
+        gesso.createTable(div, headings, records);
+    }
+
+    gesso.replaceElement($("#appointment-request-table"), div);
+}
+
 function renderPatientTable(data) {
     const records = data.data.patients;
     const headings = ["ID", "Name", "ZIP", "Phone", "Email"];
@@ -30,6 +42,8 @@ function renderPatientTable(data) {
 
 class MainPage {
     render() {
+        $("#content").classList.remove("excursion");
+
         $("#content").innerHTML = `
 <header>
   <div>
@@ -56,13 +70,13 @@ class MainPage {
   <div id="appointment-requests">
     <h1>Appointment requests</h1>
 
-    <p>XXX</p>
+    <div id="appointment-request-table"></div>
   </div>
 
   <div id="appointments">
     <h1>Appointments</h1>
 
-    <p>XXX</p>
+    <div id="appointment-table"></div>
   </div>
 
   <div id="patients">
@@ -82,6 +96,7 @@ class MainPage {
     update(data) {
         main.updateTabs();
         renderName(data);
+        renderAppointmentRequestTable(data);
         renderPatientTable(data);
     }
 }

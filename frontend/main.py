@@ -78,16 +78,21 @@ async def get_data(request):
         curs = await conn.execute("select id, name, phone, email from doctors order by name, id")
         doctor_records = await curs.fetchall()
 
+        # XXX 1
+        curs = await conn.execute("select id, patient_id, to_char(date, 'YYYY-MM-DD'), date_is_approximate, time_of_day from appointment_requests order by date")
+        appointment_request_records = await curs.fetchall()
+
     return JSONResponse({"data": {
         "patients": patient_records,
-        "doctors": doctor_records
+        "doctors": doctor_records,
+        "appointment_requests": appointment_request_records,
     }})
 
 @star.route("/api/appointment/create")
 async def post_appointment_create(request, methods=["POST"]):
     async with pool.connection() as conn:
-        await conn.execute("insert into appointments (start_time, end_time, patient_id, doctor_id)"
-                           "values ('2022-03-28 17:40:00', '2022-03-28 18:00:00', 1, 1)")
+        await conn.execute("insert into appointments (date, time, patient_id, doctor_id)"
+                           "values ('2021-12-21', '08:00', 1, 1)")
 
     return JSONResponse({"error": None})
 
@@ -96,7 +101,7 @@ async def post_appointment_request_create(request):
     # XXX Get patient ID
 
     async with pool.connection() as conn:
-        await conn.execute("insert into appointment_requests (patient_id, day, day_is_approximate, time_of_day)"
+        await conn.execute("insert into appointment_requests (patient_id, date, date_is_approximate, time_of_day)"
                            "values (1, '2021-12-21', true, 'any')")
 
     return JSONResponse({"error": None})

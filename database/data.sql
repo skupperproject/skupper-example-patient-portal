@@ -25,10 +25,3 @@ values
   (4, 'Leonard McCoy', '50201', 'bones@example.net'),
   (5, 'Michaela Quinn', '50028', 'drmike@example.net'),
   (6, 'Miranda Bailey', '98134', 'chief@example.net');
-
-insert into appointments
-  (start_time, end_time, patient_id, doctor_id)
-values
-  ('2022-03-28 17:40:00', '2022-03-28 18:00:00', 1, 1),
-  ('2022-06-01 09:30:00', '2022-06-01 10:00:00', 2, 2),
-  ('2022-01-14 13:00:00', '2022-01-14 14:00:00', 3, 3);

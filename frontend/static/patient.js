@@ -32,6 +32,8 @@ class MainPage {
     render() {
         const patientId = new URL(window.location).searchParams.get("id");
 
+        $("#content").classList.remove("excursion");
+
         $("#content").innerHTML = `
 <header>
   <div>
@@ -58,19 +60,19 @@ class MainPage {
   <div id="overview">
     <h1>Welcome!</h1>
 
-    <p><a class="button" href="/appointment-request/create?patient=${patientId}" >Request an appointment</a></p>
+    <p><a class="button" href="/appointment-request/create?patient=${patientId}">Request an appointment</a></p>
 
-    <p>Open appointment requests: <span id="appointment-request-count">0</span></p>
+    <p>You have <b>0</b> open appointment requests.</p>
 
-    <p>Upcoming appointments: <span id="appointment-count">1</span></p>
+    <p>You have <b>1</b> upcoming appointment.</p>
 
-    <p>Your next appointment: <span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></p>
+    <p>Your next appointment is at <b><span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></b>.</p>
   </div>
 
   <div id="appointments">
     <h1>Appointments</h1>
 
-    <p>XXX</p>
+    <div id="appointment-table"></div>
   </div>
 
   <div id="doctors">

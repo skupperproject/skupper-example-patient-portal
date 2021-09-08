@@ -22,15 +22,15 @@ create table appointments (
     id                  serial primary key,
     patient_id          integer not null references patients,
     doctor_id           integer not null references doctors,
-    start_time          timestamp,
-    end_time            timestamp
+    date                date,
+    time                time
 );
 
 create table appointment_requests (
     id                  serial primary key,
     patient_id          integer not null references patients,
-    day                 date,
-    day_is_approximate  boolean not null,
+    date                date,
+    date_is_approximate boolean not null,
     time_of_day         varchar not null
 );
 
