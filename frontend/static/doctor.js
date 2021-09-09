@@ -7,35 +7,56 @@ function getDoctorId() {
 }
 
 function renderName(data) {
-    const name = data.data.new.doctors[getDoctorId()].name;
+    const name = data.doctors[getDoctorId()].name;
     $("#doctor-name").textContent = name;
 }
 
 function renderAppointmentRequestTable(data) {
     const id = "appointment-request-table";
-    const collection = data.data.new.appointment_requests;
-    const headings = ["ID", "Patient", "Day", "Day is approximate?", "Time of day", "Actions"];
+    const items = Object.values(data.appointment_requests);
+    const headings = ["ID", "Patient", "Date", "Date is approximate?", "Time of day", "Actions"];
     const fieldNames = ["id", "patient_id", "date", "date_is_approximate", "time_of_day", "id"];
 
-    main.renderTable(id, collection, headings, fieldNames);
+    function getPatientName(patientId) {
+        return data.patients[patientId].name;
+    }
+
+    function getYesNo(value) {
+        if (value) return "Yes";
+        else return "No";
+    }
+
+    function cap(value) {
+        return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    const fieldFunctions = [null, getPatientName, null, getYesNo, cap];
+
+    main.renderTable(id, items, headings, fieldNames, fieldFunctions);
 }
 
 function renderAppointmentTable(data) {
     const id = "appointment-table";
-    const collection = data.data.new.appointments;
-    const headings = ["ID", "Patient", "Doctor", "Date", "Time"];
-    const fieldNames = ["id", "patient_id", "doctor_id", "date", "time"];
+    const items = Object.values(data.appointments).filter(item => item.doctor_id === getDoctorId());
+    const headings = ["ID", "Patient", "Date", "Time"];
+    const fieldNames = ["id", "patient_id", "date", "time"];
 
-    main.renderTable(id, collection, headings, fieldNames);
+    function getPatientName(patientId) {
+        return data.patients[patientId].name;
+    }
+
+    const fieldFunctions = [null, getPatientName];
+
+    main.renderTable(id, items, headings, fieldNames, fieldFunctions);
 }
 
 function renderPatientTable(data) {
     const id = "patient-table";
-    const collection = data.data.new.patients;
+    const items = Object.values(data.patients);
     const headings = ["ID", "Name", "ZIP", "Phone", "Email"];
     const fieldNames = ["id", "name", "zip", "phone", "email"];
 
-    main.renderTable(id, collection, headings, fieldNames);
+    main.renderTable(id, items, headings, fieldNames);
 }
 
 class MainPage {

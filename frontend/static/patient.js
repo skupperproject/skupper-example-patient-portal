@@ -7,62 +7,42 @@ function getPatientId() {
 }
 
 function renderName(data) {
-    const name = data.data.new.patients[getPatientId()].name;
+    const name = data.patients[getPatientId()].name;
     $("#patient-name").textContent = name;
 }
 
 function renderAppointmentRequestCount(data) {
-    const patientId = getPatientId();
-    const collection = data.data.new.appointment_requests;
-    let count = 0;
-
-    for (const item of Object.values(collection)) {
-        if (item.patient_id === patientId) {
-            count++;
-        }
-    }
-
-    $("#appointment-request-count").textContent = count;
+    const items = Object.values(data.appointment_requests).filter(item => item.patient_id = getPatientId());
+    $("#appointment-request-count").textContent = items.length;
 }
 
 function renderAppointmentCount(data) {
-    const patientId = getPatientId();
-    const collection = data.data.new.appointments;
-    let count = 0;
-
-    for (const item of Object.values(collection)) {
-        console.log(item.patient_id, patientId);
-
-        if (item.patient_id === patientId) {
-            count++;
-        }
-    }
-
-    $("#appointment-count").textContent = count;
+    const items = Object.values(data.appointments).filter(item => item.patient_id = getPatientId());
+    $("#appointment-count").textContent = items.length;
 }
 
 function renderAppointmentTable(data) {
     const id = "appointment-table"
-    const collection = data.data.new.appointments;
-    const headings = ["ID", "Patient", "Date", "Time"];
-    const fieldNames = ["id", "patient_id", "date", "time"];
+    const items = Object.values(data.appointments).filter(item => item.patient_id === getPatientId());
+    const headings = ["ID", "Doctor", "Date", "Time"];
+    const fieldNames = ["id", "doctor_id", "date", "time"];
 
-    function getPatientName(patientId) {
-        return data.data.new.patients[patientId].name;
+    function getDoctorName(doctorId) {
+        return data.doctors[doctorId].name;
     }
 
-    const fieldFunctions = [null, getPatientName];
+    const fieldFunctions = [null, getDoctorName];
 
-    main.renderTable(id, collection, headings, fieldNames, fieldFunctions);
+    main.renderTable(id, items, headings, fieldNames, fieldFunctions);
 }
 
 function renderDoctorTable(data) {
     const id = "doctor-table"
-    const collection = data.data.new.doctors;
+    const items = Object.values(data.doctors);
     const headings = ["ID", "Name", "Phone", "Email"];
     const fieldNames = ["id", "name", "phone", "email"];
 
-    main.renderTable(id, collection, headings, fieldNames);
+    main.renderTable(id, items, headings, fieldNames);
 }
 
 class MainPage {

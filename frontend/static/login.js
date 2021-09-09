@@ -1,7 +1,7 @@
 const gesso = new Gesso();
 
 function renderPatientLoginLinks(data) {
-    const collection = data.data.new.patients;
+    const collection = data.patients;
     const nav = gesso.createElement(null, "nav", {id: "patient-login-links", class: "login"});
 
     for (const item of Object.values(collection)) {
@@ -12,7 +12,7 @@ function renderPatientLoginLinks(data) {
 }
 
 function renderDoctorLoginLinks(data) {
-    const collection = data.data.new.doctors;
+    const collection = data.doctors;
     const nav = gesso.createElement(null, "nav", {id: "doctor-login-links", class: "login"});
 
     for (const item of Object.values(collection)) {

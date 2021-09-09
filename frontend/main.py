@@ -81,25 +81,7 @@ async def get_notifications(request):
 @star.route("/api/data")
 async def get_data(request):
     async with pool.connection() as conn:
-        curs = await conn.execute("select id, name, zip, phone, email from patients order by name, id")
-        patient_records = await curs.fetchall()
-
-        curs = await conn.execute("select id, name, phone, email from doctors order by name, id")
-        doctor_records = await curs.fetchall()
-
-        curs = await conn.execute("select id, patient_id, to_char(date, 'YYYY-MM-DD'), date_is_approximate, time_of_day "
-                                  "from appointment_requests order by date")
-        appointment_request_records = await curs.fetchall()
-
-        curs = await conn.execute("select id, patient_id, doctor_id, to_char(date, 'YYYY-MM-DD'), to_char(time, 'HH:mm') "
-                                  "from appointments order by date, time")
-        appointment_records = await curs.fetchall()
-
-        curs = await conn.execute("select id, patient_id, summary, amount, to_char(date_paid, 'YYYY-MM-DD') "
-                                  "from bills order by date_paid")
-        bill_records = await curs.fetchall()
-
-        new_data = dict()
+        data = dict()
         tables = "patients", "doctors", "appointment_requests", "appointments", "bills"
 
         for table in tables:
@@ -112,16 +94,9 @@ async def get_data(request):
                 record_dict = dict(zip(titles, record))
                 collection[record_dict["id"]] = record_dict
 
-            new_data[table] = collection
+            data[table] = collection
 
-    return CustomJsonResponse({"data": {
-        "patients": patient_records,
-        "doctors": doctor_records,
-        "appointment_requests": appointment_request_records,
-        "appointments": appointment_records,
-        "bills": bill_records,
-        "new": new_data,
-    }})
+    return CustomJsonResponse(data)
 
 @star.route("/api/appointment-request/create", methods=["POST"])
 async def post_appointment_request_create(request):

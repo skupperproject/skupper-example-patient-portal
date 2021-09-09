@@ -105,11 +105,11 @@ export function post(url, data) {
     // XXX errors
 }
 
-export function renderTable(id, collection, headings, fieldNames, fieldFunctions) {
+export function renderTable(id, items, headings, fieldNames, fieldFunctions) {
     const rows = [];
     const div = gesso.createDiv(null, `#${id}`);
 
-    for (const item of Object.values(collection)) {
+    for (const item of items) {
         const row = [];
         let index = 0;
 
