@@ -2,59 +2,72 @@ import * as main from "./main.js";
 
 const gesso = new Gesso();
 
+function getPatientId() {
+    return parseInt(new URL(window.location).searchParams.get("id"));
+}
+
 function renderName(data) {
-    const id = parseInt(new URL(window.location).searchParams.get("id"));
-    let name;
-
-    for (let record of data.data.patients) {
-        if (record[0] == id) {
-            name = record[1];
-            break;
-        }
-    }
-
+    const name = data.data.new.patients[getPatientId()].name;
     $("#patient-name").textContent = name;
 }
 
 function renderAppointmentRequestCount(data) {
-    const records = data.data.appointment_requests;
-    const count = records.length;
+    const patientId = getPatientId();
+    const collection = data.data.new.appointment_requests;
+    let count = 0;
+
+    for (const item of Object.values(collection)) {
+        if (item.patient_id === patientId) {
+            count++;
+        }
+    }
+
     $("#appointment-request-count").textContent = count;
 }
 
 function renderAppointmentCount(data) {
-    const records = data.data.appointments;
-    const count = records.length;
+    const patientId = getPatientId();
+    const collection = data.data.new.appointments;
+    let count = 0;
+
+    for (const item of Object.values(collection)) {
+        console.log(item.patient_id, patientId);
+
+        if (item.patient_id === patientId) {
+            count++;
+        }
+    }
+
     $("#appointment-count").textContent = count;
 }
 
 function renderAppointmentTable(data) {
-    const records = data.data.appointments;
-    const headings = ["ID", "Patient", "Doctor", "Date", "Time"];
-    const div = gesso.createDiv(null, "#appointment-table");
+    const id = "appointment-table"
+    const collection = data.data.new.appointments;
+    const headings = ["ID", "Patient", "Date", "Time"];
+    const fieldNames = ["id", "patient_id", "date", "time"];
 
-    if (records.length) {
-        gesso.createTable(div, headings, records);
+    function getPatientName(patientId) {
+        return data.data.new.patients[patientId].name;
     }
 
-    gesso.replaceElement($("#appointment-table"), div);
+    const fieldFunctions = [null, getPatientName];
+
+    main.renderTable(id, collection, headings, fieldNames, fieldFunctions);
 }
 
 function renderDoctorTable(data) {
-    const records = data.data.doctors;
+    const id = "doctor-table"
+    const collection = data.data.new.doctors;
     const headings = ["ID", "Name", "Phone", "Email"];
-    const div = gesso.createDiv(null, "#doctor-table");
+    const fieldNames = ["id", "name", "phone", "email"];
 
-    if (records.length) {
-        gesso.createTable(div, headings, records);
-    }
-
-    gesso.replaceElement($("#doctor-table"), div);
+    main.renderTable(id, collection, headings, fieldNames);
 }
 
 class MainPage {
     render() {
-        const patientId = new URL(window.location).searchParams.get("id");
+        const patientId = getPatientId();
 
         $("#content").classList.remove("excursion");
 

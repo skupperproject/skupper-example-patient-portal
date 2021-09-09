@@ -18,6 +18,8 @@
 #
 
 import os
+import json
+import uuid
 import uvicorn
 
 from psycopg_pool import AsyncConnectionPool
@@ -27,15 +29,18 @@ from starlette.background import BackgroundTask
 from starlette.responses import Response, FileResponse, JSONResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from data import *
-
-process_id = f"frontend-{unique_id()}"
+process_id = f"frontend-{uuid.uuid4().hex[:8]}"
 
 database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
 database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
 database_url = f"postgresql://patient_portal:secret@{database_host}:{database_port}/patient_portal"
 
 pool = None
+
+class CustomJsonResponse(JSONResponse):
+    def render(self, content):
+        return json.dumps(content, ensure_ascii=False, allow_nan=False,
+                          indent=2, separators=(", ", ": "), default=str).encode("utf-8")
 
 def log(message):
     print(f"{process_id}: {message}")
@@ -94,12 +99,28 @@ async def get_data(request):
                                   "from bills order by date_paid")
         bill_records = await curs.fetchall()
 
-    return JSONResponse({"data": {
+        new_data = dict()
+        tables = "patients", "doctors", "appointment_requests", "appointments", "bills"
+
+        for table in tables:
+            curs = await conn.execute(f"select * from {table}")
+            titles = [x.name for x in curs.description]
+            records = await curs.fetchall()
+            collection = dict()
+
+            for record in records:
+                record_dict = dict(zip(titles, record))
+                collection[record_dict["id"]] = record_dict
+
+            new_data[table] = collection
+
+    return CustomJsonResponse({"data": {
         "patients": patient_records,
         "doctors": doctor_records,
         "appointment_requests": appointment_request_records,
         "appointments": appointment_records,
         "bills": bill_records,
+        "new": new_data,
     }})
 
 @star.route("/api/appointment-request/create", methods=["POST"])

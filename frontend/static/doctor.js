@@ -2,59 +2,45 @@ import * as main from "./main.js";
 
 const gesso = new Gesso();
 
+function getDoctorId() {
+    return parseInt(new URL(window.location).searchParams.get("id"));
+}
+
 function renderName(data) {
-    const id = parseInt(new URL(window.location).searchParams.get("id"));
-    let name;
-
-    for (let record of data.data.doctors) {
-        if (record[0] == id) {
-            name = record[1];
-            break;
-        }
-    }
-
+    const name = data.data.new.doctors[getDoctorId()].name;
     $("#doctor-name").textContent = name;
 }
 
 function renderAppointmentRequestTable(data) {
-    const records = data.data.appointment_requests;
-    const headings = ["ID", "Patient", "Day", "Day is approximate?", "Time of day"];
-    const div = gesso.createDiv(null, "#appointment-request-table");
+    const id = "appointment-request-table";
+    const collection = data.data.new.appointment_requests;
+    const headings = ["ID", "Patient", "Day", "Day is approximate?", "Time of day", "Actions"];
+    const fieldNames = ["id", "patient_id", "date", "date_is_approximate", "time_of_day", "id"];
 
-    if (records.length) {
-        gesso.createTable(div, headings, records);
-    }
-
-    gesso.replaceElement($("#appointment-request-table"), div);
+    main.renderTable(id, collection, headings, fieldNames);
 }
 
 function renderAppointmentTable(data) {
-    const records = data.data.appointments;
+    const id = "appointment-table";
+    const collection = data.data.new.appointments;
     const headings = ["ID", "Patient", "Doctor", "Date", "Time"];
-    const div = gesso.createDiv(null, "#appointment-table");
+    const fieldNames = ["id", "patient_id", "doctor_id", "date", "time"];
 
-    if (records.length) {
-        gesso.createTable(div, headings, records);
-    }
-
-    gesso.replaceElement($("#appointment-table"), div);
+    main.renderTable(id, collection, headings, fieldNames);
 }
 
 function renderPatientTable(data) {
-    const records = data.data.patients;
+    const id = "patient-table";
+    const collection = data.data.new.patients;
     const headings = ["ID", "Name", "ZIP", "Phone", "Email"];
-    const div = gesso.createDiv(null, "#patient-table");
+    const fieldNames = ["id", "name", "zip", "phone", "email"];
 
-    if (records.length) {
-        gesso.createTable(div, headings, records);
-    }
-
-    gesso.replaceElement($("#patient-table"), div);
+    main.renderTable(id, collection, headings, fieldNames);
 }
 
 class MainPage {
     render() {
-        const doctorId = new URL(window.location).searchParams.get("id");
+        const doctorId = getDoctorId();
 
         $("#content").classList.remove("excursion");
 

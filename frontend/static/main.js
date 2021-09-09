@@ -4,6 +4,8 @@ import * as doctor from "./doctor.js";
 import * as login from "./login.js";
 import * as patient from "./patient.js";
 
+const gesso = new Gesso();
+
 let currentPage;
 
 const routes = {
@@ -101,4 +103,37 @@ export function post(url, data) {
     }).then(response => response.json());
 
     // XXX errors
+}
+
+export function renderTable(id, collection, headings, fieldNames, fieldFunctions) {
+    const rows = [];
+    const div = gesso.createDiv(null, `#${id}`);
+
+    for (const item of Object.values(collection)) {
+        const row = [];
+        let index = 0;
+
+        for (const name of fieldNames) {
+            let value = item[name];
+
+            if (fieldFunctions && fieldFunctions.length > index) {
+                const func = fieldFunctions[index];
+
+                if (func) {
+                    value = func(value);
+                }
+            }
+
+            row.push(value);
+            index++;
+        }
+
+        rows.push(row);
+    }
+
+    if (rows.length) {
+        gesso.createTable(div, headings, rows);
+    }
+
+    gesso.replaceElement($(`#${id}`), div);
 }

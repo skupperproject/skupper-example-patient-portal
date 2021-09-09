@@ -5,7 +5,6 @@ RUN microdnf -y install git libpq postgresql python3 && microdnf clean all
 RUN pip3 install psycopg psycopg_pool starlette sse_starlette uvicorn
 
 ADD main.py /app/main.py
-ADD data.py /app/data.py
 ADD static /app/static
 
 WORKDIR /app

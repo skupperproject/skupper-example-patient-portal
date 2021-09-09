@@ -1,24 +1,22 @@
 const gesso = new Gesso();
 
 function renderPatientLoginLinks(data) {
-    const records = data.data.patients;
+    const collection = data.data.new.patients;
     const nav = gesso.createElement(null, "nav", {id: "patient-login-links", class: "login"});
 
-    for (let record of records) {
-        const href = `/patient?id=${record[0]}`;
-        gesso.createLink(nav, href, record[1]);
+    for (const item of Object.values(collection)) {
+        gesso.createLink(nav, `/patient?id=${item.id}`, item.name);
     }
 
     gesso.replaceElement($("#patient-login-links"), nav);
 }
 
 function renderDoctorLoginLinks(data) {
-    const records = data.data.doctors;
+    const collection = data.data.new.doctors;
     const nav = gesso.createElement(null, "nav", {id: "doctor-login-links", class: "login"});
 
-    for (let record of records) {
-        const href = `/doctor?id=${record[0]}`;
-        gesso.createLink(nav, href, record[1]);
+    for (const item of Object.values(collection)) {
+        gesso.createLink(nav, `/doctor?id=${item.id}`, item.name);
     }
 
     gesso.replaceElement($("#doctor-login-links"), nav);
