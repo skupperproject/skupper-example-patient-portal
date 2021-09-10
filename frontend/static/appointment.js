@@ -1,3 +1,4 @@
+import * as gesso from "./gesso.js";
 import * as main from "./main.js";
 
 export class CreatePage {
@@ -50,7 +51,7 @@ export class CreatePage {
         $("#appointment-form").addEventListener("submit", event => {
             event.preventDefault();
 
-            main.post("/api/appointment/create", {
+            gesso.post("/api/appointment/create", {
                 doctor: doctorId,
                 patient: parseInt(event.target.doctor.value),
                 date: event.target.date.value,

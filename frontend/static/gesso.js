@@ -258,6 +258,18 @@ export function formatDurationBrief(millis) {
     return formatDuration(millis, ["y", "w", "d", "h", "m", "s", "ms"]);
 }
 
+export function post(url, data) {
+    // console.log("Posting data to", url, data);
+
+    fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data),
+    }).then(response => response.json());
+
+    // XXX errors
+}
+
 export class Router {
     constructor(routes) {
         this.routes = routes;

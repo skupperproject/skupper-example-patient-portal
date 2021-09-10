@@ -28,18 +28,6 @@ new EventSource("/api/notifications").onmessage = event => {
     window.dispatchEvent(new Event("update"));
 };
 
-export function post(url, data) {
-    console.log("Posting data to", url, data);
-
-    fetch(url, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data),
-    }).then(response => response.json());
-
-    // XXX errors
-}
-
 export function updateTabs() {
     const url = new URL(window.location);
     const selectedTabId = url.hash.slice(1);
