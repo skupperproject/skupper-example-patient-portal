@@ -58,16 +58,6 @@ button:hover {
     margin-bottom: 0;
 }
 
-#users {
-    max-height: 100%;
-    overflow-y: scroll;
-}
-
-#action-form > button {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
 /* --- */
 
 .tabs {

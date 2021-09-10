@@ -88,13 +88,13 @@ async def get_data(request):
             curs = await conn.execute(f"select * from {table}")
             titles = [x.name for x in curs.description]
             records = await curs.fetchall()
-            collection = dict()
+            items = dict()
 
             for record in records:
-                record_dict = dict(zip(titles, record))
-                collection[record_dict["id"]] = record_dict
+                item = dict(zip(titles, record))
+                items[item["id"]] = item
 
-            data[table] = collection
+            data[table] = items
 
     return CustomJsonResponse(data)
 
@@ -107,7 +107,7 @@ async def post_appointment_request_create(request):
                            "values (%s, %s, %s, %s)",
                            (data["patient"], data["date"], data["date_is_approximate"], data["time_of_day"]))
 
-    return JSONResponse({"error": None})
+    return CustomJsonResponse({"error": None})
 
 @star.route("/api/appointment/create", methods=["POST"])
 async def post_appointment_create(request):
@@ -118,7 +118,7 @@ async def post_appointment_create(request):
                            "values (%s, %s, %s, %s)",
                            (data["patient"], data["doctor"], data["date"], data["time"]))
 
-    return JSONResponse({"error": None})
+    return CustomJsonResponse({"error": None})
 
 if __name__ == "__main__":
     http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
