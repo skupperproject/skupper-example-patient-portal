@@ -15,8 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-"use strict";
-
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
 
@@ -28,233 +26,278 @@ Element.prototype.$$ = function () {
   return this.querySelectorAll.apply(this, arguments);
 };
 
-function capitalize(string) {
+window.$ = $;
+window.$$ = $$;
+
+export function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function nvl(value, replacement) {
+export function nvl(value, replacement) {
     if (value === null || value === undefined) {
         return replacement;
     }
 }
 
-class Gesso {
-    parseQueryString(str) {
-        if (str.startsWith("?")) {
-            str = str.slice(1);
-        }
-
-        let qvars = str.split(/[&;]/);
-        let obj = {};
-
-        for (let i = 0; i < qvars.length; i++) {
-            let [name, value] = qvars[i].split("=", 2);
-
-            name = decodeURIComponent(name);
-            value = decodeURIComponent(value);
-
-            obj[name] = value;
-        }
-
-        return obj;
+export function parseQueryString(str) {
+    if (str.startsWith("?")) {
+        str = str.slice(1);
     }
 
-    emitQueryString(obj) {
-        let tokens = [];
+    const qvars = str.split(/[&;]/);
+    const obj = {};
 
-        for (let name in obj) {
-            if (!obj.hasOwnProperty(name)) {
-                continue;
-            }
+    for (const i = 0; i < qvars.length; i++) {
+        let [name, value] = qvars[i].split("=", 2);
 
-            let value = obj[name];
+        name = decodeURIComponent(name);
+        value = decodeURIComponent(value);
 
-            name = decodeURIComponent(name);
-            value = decodeURIComponent(value);
-
-            tokens.push(name + "=" + value);
-        }
-
-        return tokens.join(";");
+        obj[name] = value;
     }
 
-    createElement(parent, tag, options) {
-        let elem = document.createElement(tag);
+    return obj;
+}
 
-        if (parent != null) {
-            parent.appendChild(elem);
+export function emitQueryString(obj) {
+    const tokens = [];
+
+    for (let name in obj) {
+        if (!obj.hasOwnProperty(name)) {
+            continue;
         }
 
-        if (options != null) {
-            if (typeof options === "string" || typeof options === "number") {
-                this.createText(elem, options);
-            } else if (typeof options === "object") {
-                if (options.hasOwnProperty("text")) {
-                    let text = options["text"];
+        let value = obj[name];
 
-                    if (text != null) {
-                        this.createText(elem, text);
-                    }
+        name = decodeURIComponent(name);
+        value = decodeURIComponent(value);
 
-                    delete options["text"];
+        tokens.push(name + "=" + value);
+    }
+
+    return tokens.join(";");
+}
+
+export function createElement(parent, tag, options) {
+    const elem = document.createElement(tag);
+
+    if (parent != null) {
+        parent.appendChild(elem);
+    }
+
+    if (options != null) {
+        if (typeof options === "string" || typeof options === "number") {
+            createText(elem, options);
+        } else if (typeof options === "object") {
+            if (options.hasOwnProperty("text")) {
+                let text = options["text"];
+
+                if (text != null) {
+                    createText(elem, text);
                 }
 
-                for (let key of Object.keys(options)) {
-                    elem.setAttribute(key, options[key]);
-                }
-            } else {
-                throw `illegal argument: ${options}`;
+                delete options["text"];
             }
-        }
 
-        return elem;
-    }
-
-    createText(parent, text) {
-        let node = document.createTextNode(text);
-
-        if (parent != null) {
-            parent.appendChild(node);
-        }
-
-        return node;
-    }
-
-    _setSelector(elem, selector) {
-        if (selector == null) {
-            return;
-        }
-
-        if (selector.startsWith("#")) {
-            elem.setAttribute("id", selector.slice(1));
+            for (let key of Object.keys(options)) {
+                elem.setAttribute(key, options[key]);
+            }
         } else {
-            elem.setAttribute("class", selector);
+            throw `illegal argument: ${options}`;
         }
     }
 
-    createDiv(parent, selector, options) {
-        let elem = this.createElement(parent, "div", options);
+    return elem;
+}
 
-        this._setSelector(elem, selector);
+export function createText(parent, text) {
+    const node = document.createTextNode(text);
 
-        return elem;
+    if (parent != null) {
+        parent.appendChild(node);
     }
 
-    createSpan(parent, selector, options) {
-        let elem = this.createElement(parent, "span", options);
+    return node;
+}
 
-        this._setSelector(elem, selector);
-
-        return elem;
+function _setSelector(elem, selector) {
+    if (selector == null) {
+        return;
     }
 
-    createLink(parent, href, options) {
-        let elem = this.createElement(parent, "a", options);
+    if (selector.startsWith("#")) {
+        elem.setAttribute("id", selector.slice(1));
+    } else {
+        elem.setAttribute("class", selector);
+    }
+}
 
-        if (href != null) {
-            elem.setAttribute("href", href);
+export function createDiv(parent, selector, options) {
+    const elem = createElement(parent, "div", options);
+
+    _setSelector(elem, selector);
+
+    return elem;
+}
+
+export function createSpan(parent, selector, options) {
+    const elem = createElement(parent, "span", options);
+
+    _setSelector(elem, selector);
+
+    return elem;
+}
+
+export function createLink(parent, href, options) {
+    const elem = createElement(parent, "a", options);
+
+    if (href != null) {
+        elem.setAttribute("href", href);
+    }
+
+    return elem;
+}
+
+export function createTable(parent, headings, rows, options) {
+    const elem = createElement(parent, "table", options);
+    const thead = createElement(elem, "thead");
+    const tbody = createElement(elem, "tbody");
+
+    if (headings) {
+        const tr = createElement(thead, "tr");
+
+        for (const heading of headings) {
+            createElement(tr, "th", heading);
         }
-
-        return elem;
     }
 
-    createTable(parent, headings, rows, options) {
-        let elem = this.createElement(parent, "table", options);
-        let thead = this.createElement(elem, "thead");
-        let tbody = this.createElement(elem, "tbody");
+    for (const row of rows) {
+        const tr = createElement(tbody, "tr");
 
-        if (headings) {
-            let tr = this.createElement(thead, "tr");
+        for (const cell of row) {
+            const td = createElement(tr, "td");
 
-            for (let heading of headings) {
-                this.createElement(tr, "th", heading);
+            if (cell instanceof Node) {
+                td.appendChild(cell);
+            } else {
+                createText(td, cell);
             }
         }
+    }
 
-        for (let row of rows) {
-            let tr = this.createElement(tbody, "tr");
+    return elem;
+}
 
-            for (let cell of row) {
-                let td = this.createElement(tr, "td");
+export function createFieldTable(parent, fields, options) {
+    const elem = createElement(parent, "table", options);
+    const tbody = createElement(elem, "tbody");
 
-                if (cell instanceof Node) {
-                    td.appendChild(cell);
-                } else {
-                    this.createText(td, cell);
+    for (const field of fields) {
+        const tr = createElement(tbody, "tr");
+        const th = createElement(tr, "th", field[0]);
+        const td = createElement(tr, "td");
+
+        if (field[1] instanceof Node) {
+            td.appendChild(field[1]);
+        } else {
+            createText(td, field[1]);
+        }
+    }
+
+    return elem;
+}
+
+export function replaceElement(oldElement, newElement) {
+    oldElement.parentNode.replaceChild(newElement, oldElement);
+}
+
+export function formatDuration(millis, suffixes) {
+    if (millis == null) {
+        return "-";
+    }
+
+    if (suffixes == null) {
+        suffixes = [
+            " years",
+            " weeks",
+            " days",
+            " hours",
+            " minutes",
+            " seconds",
+            " millis",
+        ];
+    }
+
+    let prefix = "";
+
+    if (millis < 0) {
+        prefix = "-";
+    }
+
+    millis = Math.abs(millis);
+
+    const seconds = Math.round(millis / 1000);
+    const minutes = Math.round(millis / 60 / 1000);
+    const hours = Math.round(millis / 3600 / 1000);
+    const days = Math.round(millis / 86400 / 1000);
+    const weeks = Math.round(millis / 604800 / 1000);
+    const years = Math.round(millis / 31536000 / 1000);
+
+    if (years >= 1)   return `${prefix}${years}${suffixes[0]}`;
+    if (weeks >= 1)   return `${prefix}${weeks}${suffixes[1]}`;
+    if (days >= 1)    return `${prefix}${days}${suffixes[2]}`;
+    if (hours >= 1)   return `${prefix}${hours}${suffixes[3]}`;
+    if (minutes >= 1) return `${prefix}${minutes}${suffixes[4]}`;
+    if (seconds >= 1) return `${prefix}${seconds}${suffixes[5]}`;
+    if (millis == 0) return "0";
+
+    return `${prefix}${Math.round(millis)}${suffixes[6]}`;
+}
+
+export function formatDurationBrief(millis) {
+    return formatDuration(millis, ["y", "w", "d", "h", "m", "s", "ms"]);
+}
+
+export class Router {
+    constructor(routes) {
+        this.routes = routes;
+        this.page = null;
+
+        this.addEventListeners();
+    }
+
+    addEventListeners() {
+        window.addEventListener("popstate", () => {
+            this.routeRequest(window.location.pathname);
+        });
+
+        window.addEventListener("load", () => {
+            this.routeRequest(window.location.pathname);
+        });
+
+        window.addEventListener("click", event => {
+            if (event.target.tagName === "A") {
+                event.preventDefault();
+
+                const url = new URL(event.target.href, window.location);
+
+                if (url.href != window.location.href) {
+                    this.navigate(url);
                 }
             }
-        }
-
-        return elem;
+        });
     }
 
-    createFieldTable(parent, fields, options) {
-        let elem = this.createElement(parent, "table", options);
-        let tbody = this.createElement(elem, "tbody");
+    routeRequest(path) {
+        this.page = this.routes[path];
 
-        for (let field of fields) {
-            let tr = this.createElement(tbody, "tr");
-            let th = this.createElement(tr, "th", field[0]);
-            let td = this.createElement(tr, "td");
+        this.page.render();
 
-            if (field[1] instanceof Node) {
-                td.appendChild(field[1]);
-            } else {
-                this.createText(td, field[1]);
-            }
-        }
-
-        return elem;
+        window.dispatchEvent(new Event("update"));
     }
 
-    replaceElement(oldElement, newElement) {
-        oldElement.parentNode.replaceChild(newElement, oldElement);
-    }
-
-    formatDuration(millis, suffixes) {
-        if (millis == null) {
-            return "-";
-        }
-
-        if (suffixes == null) {
-            suffixes = [
-                " years",
-                " weeks",
-                " days",
-                " hours",
-                " minutes",
-                " seconds",
-                " millis",
-            ];
-        }
-
-        let prefix = "";
-
-        if (millis < 0) {
-            prefix = "-";
-        }
-
-        millis = Math.abs(millis);
-
-        let seconds = Math.round(millis / 1000);
-        let minutes = Math.round(millis / 60 / 1000);
-        let hours = Math.round(millis / 3600 / 1000);
-        let days = Math.round(millis / 86400 / 1000);
-        let weeks = Math.round(millis / 604800 / 1000);
-        let years = Math.round(millis / 31536000 / 1000);
-
-        if (years >= 1)   return `${prefix}${years}${suffixes[0]}`;
-        if (weeks >= 1)   return `${prefix}${weeks}${suffixes[1]}`;
-        if (days >= 1)    return `${prefix}${days}${suffixes[2]}`;
-        if (hours >= 1)   return `${prefix}${hours}${suffixes[3]}`;
-        if (minutes >= 1) return `${prefix}${minutes}${suffixes[4]}`;
-        if (seconds >= 1) return `${prefix}${seconds}${suffixes[5]}`;
-        if (millis == 0) return "0";
-
-        return `${prefix}${Math.round(millis)}${suffixes[6]}`;
-    }
-
-    formatDurationBrief(millis) {
-        return this.formatDuration(millis, ["y", "w", "d", "h", "m", "s", "ms"]);
+    navigate(url) {
+        window.history.pushState({}, null, url);
+        this.routeRequest(url.pathname);
     }
 }

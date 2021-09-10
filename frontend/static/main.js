@@ -1,53 +1,44 @@
 import * as appointment from "./appointment.js";
 import * as appointmentRequest from "./appointment-request.js";
 import * as doctor from "./doctor.js";
+import * as gesso from "./gesso.js";
 import * as login from "./login.js";
 import * as patient from "./patient.js";
 
-const gesso = new Gesso();
+export const router = new gesso.Router({
+    "/": new login.MainPage(),
+    "/patient": new patient.MainPage(),
+    "/doctor": new doctor.MainPage(),
+    "/appointment/create": new appointment.CreatePage(),
+    "/appointment-request/create": new appointmentRequest.CreatePage(),
+});
 
-let currentPage;
+window.addEventListener("update", event => {
+    fetch("/api/data", {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    })
+        .then(response => response.json())
+        .then(data => router.page.update(data));
+});
 
-const routes = {
-    "/": login.mainPage,
-    "/patient": patient.mainPage,
-    "/doctor": doctor.mainPage,
-    "/appointment/create": appointment.createPage,
-    "/appointment-request/create": appointmentRequest.createPage,
+new EventSource("/api/notifications").onmessage = event => {
+    // console.log("Notified!");
+    // const data = JSON.parse(event.data);
+    window.dispatchEvent(new Event("update"));
 };
 
-function routeRequest(path) {
-    currentPage = routes[path];
+export function post(url, data) {
+    console.log("Posting data to", url, data);
 
-    currentPage.render();
+    fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data),
+    }).then(response => response.json());
 
-    window.dispatchEvent(new Event("update"));
+    // XXX errors
 }
-
-export function navigate(url) {
-    window.history.pushState({}, null, url);
-    routeRequest(url.pathname);
-}
-
-window.addEventListener("popstate", () => {
-    routeRequest(window.location.pathname);
-});
-
-window.addEventListener("load", () => {
-    routeRequest(window.location.pathname);
-});
-
-window.addEventListener("click", event => {
-    if (event.target.tagName === "A") {
-        event.preventDefault();
-
-        const url = new URL(event.target.href, window.location);
-
-        if (url.href != window.location.href) {
-            navigate(url);
-        }
-    }
-});
 
 export function updateTabs() {
     const url = new URL(window.location);
@@ -76,33 +67,6 @@ export function updateTabs() {
             }
         }
     }
-}
-
-window.addEventListener("update", event => {
-    fetch("/api/data", {
-        method: "GET",
-        headers: {"Content-Type": "application/json"},
-    })
-        .then(response => response.json())
-        .then(data => currentPage.update(data));
-});
-
-new EventSource("/api/notifications").onmessage = event => {
-    console.log("Notified!");
-    // const data = JSON.parse(event.data);
-    window.dispatchEvent(new Event("update"));
-};
-
-export function post(url, data) {
-    console.log("Posting data to", url, data);
-
-    fetch(url, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data),
-    }).then(response => response.json());
-
-    // XXX errors
 }
 
 export function renderTable(id, items, headings, fieldNames, fieldFunctions) {

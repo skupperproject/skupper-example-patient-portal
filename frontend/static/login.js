@@ -1,4 +1,4 @@
-const gesso = new Gesso();
+import * as gesso from "./gesso.js";
 
 function renderPatientLoginLinks(data) {
     const collection = data.patients;
@@ -22,7 +22,7 @@ function renderDoctorLoginLinks(data) {
     gesso.replaceElement($("#doctor-login-links"), nav);
 }
 
-class MainPage {
+export class MainPage {
     render() {
         $("#content").classList.add("excursion");
 
@@ -46,5 +46,3 @@ class MainPage {
         renderDoctorLoginLinks(data);
     }
 }
-
-export const mainPage = new MainPage();

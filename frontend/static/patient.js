@@ -1,6 +1,5 @@
+import * as gesso from "./gesso.js";
 import * as main from "./main.js";
-
-const gesso = new Gesso();
 
 function getPatientId() {
     return parseInt(new URL(window.location).searchParams.get("id"));
@@ -45,7 +44,7 @@ function renderDoctorTable(data) {
     main.renderTable(id, items, headings, fieldNames);
 }
 
-class MainPage {
+export class MainPage {
     render() {
         const patientId = getPatientId();
 
@@ -123,5 +122,3 @@ class MainPage {
         renderDoctorTable(data);
     }
 }
-
-export const mainPage = new MainPage();

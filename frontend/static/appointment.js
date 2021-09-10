@@ -1,6 +1,6 @@
 import * as main from "./main.js";
 
-class CreatePage {
+export class CreatePage {
     render() {
         const doctorId = parseInt(new URL(window.location).searchParams.get("doctor"));
 
@@ -57,12 +57,10 @@ class CreatePage {
                 time: event.target.time.value,
             });
 
-            main.navigate(new URL(`/doctor?id=${doctorId}#appointments`, window.location));
+            main.router.navigate(new URL(`/doctor?id=${doctorId}#appointments`, window.location));
         });
     }
 
     update(data) {
     }
 }
-
-export const createPage = new CreatePage();

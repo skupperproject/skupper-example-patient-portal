@@ -1,6 +1,6 @@
 import * as main from "./main.js";
 
-class CreatePage {
+export class CreatePage {
     render() {
         const patientId = new URL(window.location).searchParams.get("patient");
 
@@ -63,12 +63,10 @@ class CreatePage {
                 time_of_day: event.target.timeOfDay.value,
             });
 
-            main.navigate(new URL(`/patient?id=${patientId}#overview`, window.location));
+            main.router.navigate(new URL(`/patient?id=${patientId}#overview`, window.location));
         });
     }
 
     update(data) {
     }
 }
-
-export const createPage = new CreatePage();
