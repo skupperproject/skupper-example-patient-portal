@@ -1,5 +1,21 @@
 import * as gesso from "./gesso.js";
 
+const html = `
+<body class="excursion">
+  <section>
+    <div>
+      <h1>Patient Portal</h1>
+
+      <h2>Log in as a patient:</h2>
+      <nav id="patient-login-links"></nav>
+
+      <h2>Log in as a doctor:</h2>
+      <nav id="doctor-login-links"></nav>
+    </div>
+  </section>
+</body>
+`;
+
 function renderPatientLoginLinks(data) {
     const collection = data.patients;
     const nav = gesso.createElement(null, "nav", {id: "patient-login-links", class: "login"});
@@ -23,22 +39,8 @@ function renderDoctorLoginLinks(data) {
 }
 
 export class MainPage extends gesso.Page {
-    render() {
-        $("#content").classList.add("excursion");
-
-        $("#content").innerHTML = `
-<section>
-  <div>
-    <h1>Patient Portal</h1>
-
-    <h2>Log in as a patient:</h2>
-    <nav id="patient-login-links"></nav>
-
-    <h2>Log in as a doctor:</h2>
-    <nav id="doctor-login-links"></nav>
-  </div>
-</section>
-`;
+    constructor() {
+        super(html);
     }
 
     update(data) {
