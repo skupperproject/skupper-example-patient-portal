@@ -1,7 +1,7 @@
 import * as gesso from "./gesso.js";
 import * as main from "./main.js";
 
-export class CreatePage {
+export class CreatePage extends gesso.Page {
     render() {
         const doctorId = parseInt(new URL(window.location).searchParams.get("doctor"));
 
@@ -60,8 +60,5 @@ export class CreatePage {
 
             main.router.navigate(new URL(`/doctor?id=${doctorId}#appointments`, window.location));
         });
-    }
-
-    update(data) {
     }
 }

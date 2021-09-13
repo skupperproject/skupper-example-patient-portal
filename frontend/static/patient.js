@@ -44,7 +44,7 @@ function renderDoctorTable(data) {
     main.renderTable(id, items, headings, fieldNames);
 }
 
-export class MainPage {
+export class MainPage extends gesso.Page {
     render() {
         const patientId = getPatientId();
 

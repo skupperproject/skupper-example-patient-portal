@@ -270,6 +270,14 @@ export function post(url, data) {
     // XXX errors
 }
 
+export class Page {
+    render() {
+    }
+
+    update(data) {
+    }
+}
+
 export class Router {
     constructor(routes) {
         this.routes = routes;
@@ -280,11 +288,11 @@ export class Router {
 
     addEventListeners() {
         window.addEventListener("popstate", () => {
-            this.routeRequest(window.location.pathname);
+            this.route(window.location.pathname);
         });
 
         window.addEventListener("load", () => {
-            this.routeRequest(window.location.pathname);
+            this.route(window.location.pathname);
         });
 
         window.addEventListener("click", event => {
@@ -300,7 +308,7 @@ export class Router {
         });
     }
 
-    routeRequest(path) {
+    route(path) {
         this.page = this.routes[path];
 
         this.page.render();
@@ -310,6 +318,16 @@ export class Router {
 
     navigate(url) {
         window.history.pushState({}, null, url);
-        this.routeRequest(url.pathname);
+
+        this.route(url.pathname);
     }
 }
+
+// window.addEventListener("update", event => {
+//     fetch("/api/data", {
+//         method: "GET",
+//         headers: {"Content-Type": "application/json"},
+//     })
+//         .then(response => response.json())
+//         .then(data => router.page.update(data));
+// });

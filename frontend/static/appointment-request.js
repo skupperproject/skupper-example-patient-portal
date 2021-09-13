@@ -1,7 +1,7 @@
 import * as gesso from "./gesso.js";
 import * as main from "./main.js";
 
-export class CreatePage {
+export class CreatePage extends gesso.Page {
     render() {
         const patientId = new URL(window.location).searchParams.get("patient");
 
@@ -66,8 +66,5 @@ export class CreatePage {
 
             main.router.navigate(new URL(`/patient?id=${patientId}#overview`, window.location));
         });
-    }
-
-    update(data) {
     }
 }

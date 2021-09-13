@@ -22,7 +22,7 @@ function renderDoctorLoginLinks(data) {
     gesso.replaceElement($("#doctor-login-links"), nav);
 }
 
-export class MainPage {
+export class MainPage extends gesso.Page {
     render() {
         $("#content").classList.add("excursion");
 
