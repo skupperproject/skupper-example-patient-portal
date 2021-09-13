@@ -1,56 +1,7 @@
 import * as gesso from "./gesso.js";
 import * as main from "./main.js";
 
-function getPatientId() {
-    return parseInt(new URL(window.location).searchParams.get("id"));
-}
-
-function renderName(data) {
-    const name = data.patients[getPatientId()].name;
-    $("#patient-name").textContent = name;
-}
-
-function renderAppointmentRequestCount(data) {
-    const items = Object.values(data.appointment_requests).filter(item => item.patient_id = getPatientId());
-    $("#appointment-request-count").textContent = items.length;
-}
-
-function renderAppointmentCount(data) {
-    const items = Object.values(data.appointments).filter(item => item.patient_id = getPatientId());
-    $("#appointment-count").textContent = items.length;
-}
-
-function renderAppointmentTable(data) {
-    const id = "appointment-table"
-    const items = Object.values(data.appointments).filter(item => item.patient_id === getPatientId());
-    const headings = ["ID", "Doctor", "Date", "Time"];
-    const fieldNames = ["id", "doctor_id", "date", "time"];
-
-    function getDoctorName(doctorId) {
-        return data.doctors[doctorId].name;
-    }
-
-    const fieldFunctions = [null, getDoctorName];
-
-    main.renderTable(id, items, headings, fieldNames, fieldFunctions);
-}
-
-function renderDoctorTable(data) {
-    const id = "doctor-table"
-    const items = Object.values(data.doctors);
-    const headings = ["ID", "Name", "Phone", "Email"];
-    const fieldNames = ["id", "name", "phone", "email"];
-
-    main.renderTable(id, items, headings, fieldNames);
-}
-
-export class MainPage extends gesso.Page {
-    render() {
-        const patientId = getPatientId();
-
-        $("#content").classList.remove("excursion");
-
-        $("#content").innerHTML = `
+const html = `
 <header>
   <div>
     <div>
@@ -78,7 +29,7 @@ export class MainPage extends gesso.Page {
 
     <h1>Welcome!</h1>
 
-    <p><a class="button" href="/appointment-request/create?patient=${patientId}">Request an appointment</a></p>
+    <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
 
     <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
 
@@ -111,14 +62,48 @@ export class MainPage extends gesso.Page {
 <footer>
 </footer>
 `;
+
+const appointmentTable = new gesso.Table("appointment-table", [
+    ["ID", "id"],
+    ["Doctor", "doctor_id", (id, data) => data.doctors[id].name],
+    ["Date", "date"],
+    ["Time", "time"],
+]);
+
+const doctorTable = new gesso.Table("doctor-table", [
+    ["ID", "id"],
+    ["Name", "name"],
+    ["Phone", "phone"],
+    ["Email", "email"],
+]);
+
+export class MainPage extends gesso.Page {
+    render() {
+        $("#content").classList.remove("excursion");
+        $("#content").innerHTML = html;
     }
 
     update(data) {
         main.updateTabs();
-        renderName(data);
-        renderAppointmentRequestCount(data);
-        renderAppointmentCount(data);
-        renderAppointmentTable(data);
-        renderDoctorTable(data);
+
+        const id = parseInt(new URL(window.location).searchParams.get("id"));
+        const name = data.patients[id].name;
+        const appointmentRequestCreateLink = `/appointment-request/create?patient=${id}`;
+
+        const appointmentRequests = Object.values(data.appointment_requests)
+              .filter(item => item.patient_id = id);
+
+        const appointments = Object.values(data.appointments)
+              .filter(item => item.patient_id === id);
+
+        const doctors = Object.values(data.doctors);
+
+        $("#patient-name").textContent = name;
+        $("#appointment-request-create-link").setAttribute("href", appointmentRequestCreateLink);
+        $("#appointment-request-count").textContent = appointmentRequests.length;
+        $("#appointment-count").textContent = appointments.length;
+
+        appointmentTable.render(appointments, data);
+        doctorTable.render(doctors);
     }
 }

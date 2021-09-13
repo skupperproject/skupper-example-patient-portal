@@ -39,45 +39,6 @@ export function nvl(value, replacement) {
     }
 }
 
-export function parseQueryString(str) {
-    if (str.startsWith("?")) {
-        str = str.slice(1);
-    }
-
-    const qvars = str.split(/[&;]/);
-    const obj = {};
-
-    for (const i = 0; i < qvars.length; i++) {
-        let [name, value] = qvars[i].split("=", 2);
-
-        name = decodeURIComponent(name);
-        value = decodeURIComponent(value);
-
-        obj[name] = value;
-    }
-
-    return obj;
-}
-
-export function emitQueryString(obj) {
-    const tokens = [];
-
-    for (let name in obj) {
-        if (!obj.hasOwnProperty(name)) {
-            continue;
-        }
-
-        let value = obj[name];
-
-        name = decodeURIComponent(name);
-        value = decodeURIComponent(value);
-
-        tokens.push(name + "=" + value);
-    }
-
-    return tokens.join(";");
-}
-
 export function createElement(parent, tag, options) {
     const elem = document.createElement(tag);
 
@@ -331,3 +292,42 @@ export class Router {
 //         .then(response => response.json())
 //         .then(data => router.page.update(data));
 // });
+
+export class Table {
+    constructor(id, columns) {
+        this.id = id;
+        this.columns = columns;
+    }
+
+    render(items, context) {
+        const headings = [];
+        const rows = [];
+        const div = createDiv(null, `#${this.id}`);
+
+        for (const column of this.columns) {
+            headings.push(column[0]);
+        }
+
+        for (const item of items) {
+            const row = [];
+
+            for (const column of this.columns) {
+                let value = item[column[1]];
+
+                if (column.length === 3) {
+                    value = column[2](value, context);
+                }
+
+                row.push(value);
+            }
+
+            rows.push(row);
+        }
+
+        if (rows.length) {
+            createTable(div, headings, rows);
+        }
+
+        replaceElement($(`#${this.id}`), div);
+    }
+}
