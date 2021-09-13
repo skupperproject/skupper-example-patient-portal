@@ -56,36 +56,3 @@ export function updateTabs() {
         }
     }
 }
-
-export function renderTable(id, items, headings, fieldNames, fieldFunctions) {
-    const rows = [];
-    const div = gesso.createDiv(null, `#${id}`);
-
-    for (const item of items) {
-        const row = [];
-        let index = 0;
-
-        for (const name of fieldNames) {
-            let value = item[name];
-
-            if (fieldFunctions && fieldFunctions.length > index) {
-                const func = fieldFunctions[index];
-
-                if (func) {
-                    value = func(value);
-                }
-            }
-
-            row.push(value);
-            index++;
-        }
-
-        rows.push(row);
-    }
-
-    if (rows.length) {
-        gesso.createTable(div, headings, rows);
-    }
-
-    gesso.replaceElement($(`#${id}`), div);
-}
