@@ -2,65 +2,67 @@ import * as gesso from "./gesso.js";
 import * as main from "./main.js";
 
 const html = `
-<header>
-  <div>
+<body>
+  <header>
     <div>
-      <span class="material-icons-outlined">medical_services</span>
-      Patient Portal
+      <div>
+        <span class="material-icons-outlined">medical_services</span>
+        Patient Portal
+      </div>
+      <nav id="global-nav">
+        <a>Patient <span id="patient-name">-</span></a>
+        <a id="log-out-link" href="/">Log out</a>
+      </nav>
     </div>
-    <nav id="global-nav">
-      <a>Patient <span id="patient-name">-</span></a>
-      <a id="log-out-link" href="/">Log out</a>
+  </header>
+  <section>
+    <div>
+
+  <div class="tabs">
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#appointments">Appointments</a>
+      <a href="#bills">Bills</a>
+      <a href="#doctors">Doctors</a>
     </nav>
-  </div>
-</header>
-<section>
-  <div>
 
-<div class="tabs">
-  <nav>
-    <a href="#overview">Overview</a>
-    <a href="#appointments">Appointments</a>
-    <!-- <a href="#bills">Bills</a> -->
-    <a href="#doctors">Doctors</a>
-  </nav>
+    <div id="overview">
 
-  <div id="overview">
+      <h1>Welcome!</h1>
 
-    <h1>Welcome!</h1>
+      <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
 
-    <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
+      <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
 
-    <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
+      <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
 
-    <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
+      <!-- <p>Your next appointment is at <b><span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></b>.</p> -->
+    </div>
 
-    <!-- <p>Your next appointment is at <b><span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></b>.</p> -->
-  </div>
+    <div id="appointments">
+      <h1>Appointments</h1>
 
-  <div id="appointments">
-    <h1>Appointments</h1>
+      <div id="appointment-table"></div>
+    </div>
 
-    <div id="appointment-table"></div>
-  </div>
+    <div id="bills">
+      <h1>Bills</h1>
 
-  <div id="bills">
-    <h1>Bills</h1>
+      <div id="bill-table"></div>
+    </div>
 
-    <div id="bill-table"></div>
+    <div id="doctors">
+      <h1>Doctors</h1>
+
+      <div id="doctor-table"></div>
+    </div>
   </div>
 
-  <div id="doctors">
-    <h1>Doctors</h1>
-
-    <div id="doctor-table"></div>
-  </div>
-</div>
-
-  </div>
-</section>
-<footer>
-</footer>
+    </div>
+  </section>
+  <footer>
+  </footer>
+</body>
 `;
 
 const appointmentTable = new gesso.Table("appointment-table", [
@@ -78,9 +80,8 @@ const doctorTable = new gesso.Table("doctor-table", [
 ]);
 
 export class MainPage extends gesso.Page {
-    render() {
-        $("#content").classList.remove("excursion");
-        $("#content").innerHTML = html;
+    constructor() {
+        super(html);
     }
 
     update(data) {
@@ -89,13 +90,8 @@ export class MainPage extends gesso.Page {
         const id = parseInt(new URL(window.location).searchParams.get("id"));
         const name = data.patients[id].name;
         const appointmentRequestCreateLink = `/appointment-request/create?patient=${id}`;
-
-        const appointmentRequests = Object.values(data.appointment_requests)
-              .filter(item => item.patient_id = id);
-
-        const appointments = Object.values(data.appointments)
-              .filter(item => item.patient_id === id);
-
+        const appointmentRequests = Object.values(data.appointment_requests).filter(item => item.patient_id = id);
+        const appointments = Object.values(data.appointments).filter(item => item.patient_id === id);
         const doctors = Object.values(data.doctors);
 
         $("#patient-name").textContent = name;

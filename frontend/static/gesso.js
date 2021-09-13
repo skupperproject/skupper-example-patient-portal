@@ -232,7 +232,19 @@ export function post(url, data) {
 }
 
 export class Page {
+    constructor(html) {
+        if (!html) {
+            return;
+        }
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        this.body = doc.activeElement;
+    }
+
     render() {
+        replaceElement($("body"), this.body);
     }
 
     update(data) {
