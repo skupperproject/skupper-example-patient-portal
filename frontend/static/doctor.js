@@ -18,41 +18,41 @@ const html = `
   <section>
     <div>
 
-  <div class="tabs" id="tab">
-    <nav>
-      <a data-tab="appointment-requests">Appointment requests</a>
-      <a data-tab="appointments">Appointments</a>
-      <a data-tab="bills">Bills</a>
-      <a data-tab="patients">Patients</a>
-    </nav>
+<div class="tabs" id="tab">
+  <nav>
+    <a data-tab="appointment-requests">Appointment requests</a>
+    <a data-tab="appointments">Appointments</a>
+    <a data-tab="bills">Bills</a>
+    <a data-tab="patients">Patients</a>
+  </nav>
 
-    <div id="appointment-requests">
-      <h1>Appointment requests</h1>
+  <div id="appointment-requests">
+    <h1>Appointment requests</h1>
 
-      <div id="appointment-request-table"></div>
-    </div>
-
-    <div id="appointments">
-      <div class="fnaz">
-        <h1>Appointments</h1>
-        <a class="button" id="appointment-create-link">Create appointment</a>
-      </div>
-
-      <div id="appointment-table"></div>
-    </div>
-
-    <div id="bills">
-      <h1>Bills</h1>
-
-      <div id="bill-table"></div>
-    </div>
-
-    <div id="patients">
-      <h1>Patients</h1>
-
-      <div id="patient-table"></div>
-    </div>
+    <div id="appointment-request-table"></div>
   </div>
+
+  <div id="appointments">
+    <div class="fnaz">
+      <h1>Appointments</h1>
+      <a class="button" id="appointment-create-link">Create appointment</a>
+    </div>
+
+    <div id="appointment-table"></div>
+  </div>
+
+  <div id="bills">
+    <h1>Bills</h1>
+
+    <div id="bill-table"></div>
+  </div>
+
+  <div id="patients">
+    <h1>Patients</h1>
+
+    <div id="patient-table"></div>
+  </div>
+</div>
 
     </div>
   </section>

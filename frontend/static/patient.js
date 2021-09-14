@@ -18,42 +18,42 @@ const html = `
   <section>
     <div>
 
-  <div class="tabs" id="tab">
-    <nav>
-      <a data-tab="overview">Overview</a>
-      <a data-tab="appointments">Appointments</a>
-      <a data-tab="bills">Bills</a>
-      <a data-tab="doctors">Doctors</a>
-    </nav>
+<div class="tabs" id="tab">
+  <nav>
+    <a data-tab="overview">Overview</a>
+    <a data-tab="appointments">Appointments</a>
+    <a data-tab="bills">Bills</a>
+    <a data-tab="doctors">Doctors</a>
+  </nav>
 
-    <div id="overview">
-      <h1>Welcome!</h1>
+  <div id="overview">
+    <h1>Welcome!</h1>
 
-      <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
+    <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
 
-      <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
+    <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
 
-      <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
-    </div>
-
-    <div id="appointments">
-      <h1>Appointments</h1>
-
-      <div id="appointment-table"></div>
-    </div>
-
-    <div id="bills">
-      <h1>Bills</h1>
-
-      <div id="bill-table"></div>
-    </div>
-
-    <div id="doctors">
-      <h1>Doctors</h1>
-
-      <div id="doctor-table"></div>
-    </div>
+    <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
   </div>
+
+  <div id="appointments">
+    <h1>Appointments</h1>
+
+    <div id="appointment-table"></div>
+  </div>
+
+  <div id="bills">
+    <h1>Bills</h1>
+
+    <div id="bill-table"></div>
+  </div>
+
+  <div id="doctors">
+    <h1>Doctors</h1>
+
+    <div id="doctor-table"></div>
+  </div>
+</div>
 
     </div>
   </section>
