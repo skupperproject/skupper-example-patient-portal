@@ -18,12 +18,12 @@ const html = `
   <section>
     <div>
 
-  <div class="tabs">
+  <div class="tabs" id="tab">
     <nav>
-      <a href="#appointment-requests">Appointment requests</a>
-      <a href="#appointments">Appointments</a>
-      <a href="#bills">Bills</a>
-      <a href="#patients">Patients</a>
+      <a data-tab="appointment-requests">Appointment requests</a>
+      <a data-tab="appointments">Appointments</a>
+      <a data-tab="bills">Bills</a>
+      <a data-tab="patients">Patients</a>
     </nav>
 
     <div id="appointment-requests">
@@ -61,6 +61,8 @@ const html = `
 </body>
 `;
 
+const tabs = new gesso.Tabs("tab");
+
 function formatYesNo(value) {
     if (value) return "Yes";
     else return "No";
@@ -95,8 +97,13 @@ export class MainPage extends gesso.Page {
         super(html);
     }
 
+    render() {
+        super.render();
+        tabs.render();
+    }
+
     update(data) {
-        main.updateTabs();
+        tabs.update();
 
         const id = parseInt(new URL(window.location).searchParams.get("id"));
         const name = data.doctors[id].name;

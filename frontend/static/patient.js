@@ -18,16 +18,15 @@ const html = `
   <section>
     <div>
 
-  <div class="tabs">
+  <div class="tabs" id="tab">
     <nav>
-      <a href="#overview">Overview</a>
-      <a href="#appointments">Appointments</a>
-      <a href="#bills">Bills</a>
-      <a href="#doctors">Doctors</a>
+      <a data-tab="overview">Overview</a>
+      <a data-tab="appointments">Appointments</a>
+      <a data-tab="bills">Bills</a>
+      <a data-tab="doctors">Doctors</a>
     </nav>
 
     <div id="overview">
-
       <h1>Welcome!</h1>
 
       <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
@@ -35,8 +34,6 @@ const html = `
       <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
 
       <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
-
-      <!-- <p>Your next appointment is at <b><span id="next-appointment">8:00 AM on 21 December 2021 with Doctor Michaela Quinn</span></b>.</p> -->
     </div>
 
     <div id="appointments">
@@ -65,6 +62,8 @@ const html = `
 </body>
 `;
 
+const tabs = new gesso.Tabs("tab");
+
 const appointmentTable = new gesso.Table("appointment-table", [
     ["ID", "id"],
     ["Doctor", "doctor_id", (id, data) => data.doctors[id].name],
@@ -84,8 +83,13 @@ export class MainPage extends gesso.Page {
         super(html);
     }
 
+    render() {
+        super.render();
+        tabs.render();
+    }
+
     update(data) {
-        main.updateTabs();
+        tabs.update();
 
         const id = parseInt(new URL(window.location).searchParams.get("id"));
         const name = data.patients[id].name;

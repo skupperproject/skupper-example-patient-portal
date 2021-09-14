@@ -343,3 +343,47 @@ export class Table {
         replaceElement($(`#${this.id}`), div);
     }
 }
+
+export class Tabs {
+    constructor(id) {
+        this.id = id;
+    }
+
+    render() {
+        const links = $$(`#${this.id} > nav > a`);
+
+        for (const link of links) {
+            const url = new URL(window.location);
+            url.searchParams.set(this.id, link.dataset.tab);
+            link.setAttribute("href", url.href);
+        }
+    }
+
+    update() {
+        const url = new URL(window.location);
+        const selectedTabId = url.searchParams.get(this.id);
+        const tabs = $(`#${this.id}`);
+
+        if (!selectedTabId) {
+            tabs.$(":scope > nav > a").classList.add("selected");
+            tabs.$(":scope > div").style.display = "inherit";
+            return;
+        }
+
+        for (const link of tabs.$$(":scope > nav > a")) {
+            if (link.href === url.href) {
+                link.classList.add("selected");
+            } else {
+                link.classList.remove("selected");
+            }
+        }
+
+        for (const pane of tabs.$$(":scope > div")) {
+            if (pane.id === selectedTabId) {
+                pane.style.display = "inherit";
+            } else {
+                pane.style.display = "none";
+            }
+        }
+    }
+}
