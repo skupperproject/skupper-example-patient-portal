@@ -70,7 +70,7 @@ export class CreatePage extends gesso.Page {
                 time_of_day: event.target.timeOfDay.value,
             });
 
-            main.router.navigate(new URL(`/patient?id=${patientId}#overview`, window.location));
+            main.router.navigate(new URL(`/patient?id=${patientId}`, window.location));
         });
     }
 

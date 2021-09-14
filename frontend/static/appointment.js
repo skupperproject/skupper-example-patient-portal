@@ -64,7 +64,7 @@ export class CreatePage extends gesso.Page {
                 time: event.target.time.value,
             });
 
-            main.router.navigate(new URL(`/doctor?id=${doctorId}#appointments`, window.location));
+            main.router.navigate(new URL(`/doctor?id=${doctorId}&tab=appointments`, window.location));
         });
     }
 
