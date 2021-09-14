@@ -51,7 +51,7 @@ async def startup():
     async def configure(conn):
         await conn.set_autocommit(True)
 
-    pool = AsyncConnectionPool(database_url, configure=configure)
+    pool = AsyncConnectionPool(database_url, configure=configure, max_size=20)
 
 async def shutdown():
     await pool.close()
@@ -69,6 +69,8 @@ async def get_index(request):
 
 @star.route("/api/notifications")
 async def get_notifications(request):
+    # XXX: Enhance this to use a single async worker to get changes
+
     async def generate():
         async with pool.connection() as conn:
             await conn.execute("listen changes")
