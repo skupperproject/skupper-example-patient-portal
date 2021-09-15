@@ -13,7 +13,7 @@ trap "podman kill patient-portal-database" EXIT
 
 echo "Waiting for the database to start up"
 
-sleep 5
+sleep 10
 
 echo "Loading data"
 

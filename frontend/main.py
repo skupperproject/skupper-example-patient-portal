@@ -17,6 +17,7 @@
 # under the License.
 #
 
+import asyncio
 import os
 import json
 import uuid
@@ -36,6 +37,7 @@ database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
 database_url = f"postgresql://patient_portal:secret@{database_host}:{database_port}/patient_portal"
 
 pool = None
+change_event = None
 
 class CustomJsonResponse(JSONResponse):
     def render(self, content):
@@ -46,12 +48,24 @@ def log(message):
     print(f"{process_id}: {message}")
 
 async def startup():
-    global pool
-
     async def configure(conn):
         await conn.set_autocommit(True)
 
-    pool = AsyncConnectionPool(database_url, configure=configure, max_size=20)
+    global pool
+    pool = AsyncConnectionPool(database_url, configure=configure)
+
+    global change_event
+    change_event = asyncio.Event()
+
+    async def listen():
+        async with pool.connection() as conn:
+            await conn.execute("listen changes")
+
+            async for notify in conn.notifies():
+                change_event.set()
+                change_event.clear()
+
+    asyncio.create_task(listen())
 
 async def shutdown():
     await pool.close()
@@ -69,14 +83,10 @@ async def get_index(request):
 
 @star.route("/api/notifications")
 async def get_notifications(request):
-    # XXX: Enhance this to use a single async worker to get changes
-
     async def generate():
-        async with pool.connection() as conn:
-            await conn.execute("listen changes")
-
-            async for notify in conn.notifies():
-                yield {"data": "1"}
+        while True:
+            await change_event.wait()
+            yield {"data": "1"}
 
     return EventSourceResponse(generate())
 
@@ -126,4 +136,4 @@ if __name__ == "__main__":
     http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
     http_port = int(os.environ.get("HTTP_PORT", 8080))
 
-    uvicorn.run(star, host=http_host, port=http_port, log_level="info")
+    uvicorn.run(star, host=http_host, port=http_port)
