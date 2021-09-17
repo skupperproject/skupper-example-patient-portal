@@ -88,12 +88,12 @@ button:hover {
 
 /* --- */
 
-nav.login {
-    margin-bottom: 1em;
+ul.login {
+    list-style: none;
 }
 
-nav.login > * {
-    display: block;
+ul.login > li {
+    margin: 0;
 }
 
 /* --- */
@@ -127,8 +127,13 @@ div.form-field {
     padding: 1em 0;
 }
 
+div.form-field:last-child {
+    padding-bottom: 0;
+}
+
 div.form-field > div:nth-child(1) {
     width: 25%;
+    padding-top: 0.4em;
 }
 
 div.form-field > div:nth-child(2) {
@@ -136,6 +141,7 @@ div.form-field > div:nth-child(2) {
 }
 
 div.form-field > div:nth-child(3) {
+    padding-top: 0.4em;
     width: 35%;
 }
 

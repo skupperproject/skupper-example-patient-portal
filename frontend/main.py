@@ -23,6 +23,7 @@ import json
 import uuid
 import uvicorn
 
+from httpx import AsyncClient
 from psycopg_pool import AsyncConnectionPool
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
@@ -78,6 +79,7 @@ star.mount("/static", StaticFiles(directory="static"), name="static")
 @star.route("/doctor")
 @star.route("/appointment/create")
 @star.route("/appointment-request/create")
+@star.route("/bill/pay")
 async def get_index(request):
     return FileResponse("static/index.html")
 
@@ -129,6 +131,22 @@ async def post_appointment_create(request):
         await conn.execute("insert into appointments (patient_id, doctor_id, date, time) "
                            "values (%s, %s, %s, %s)",
                            (data["patient"], data["doctor"], data["date"], data["time"]))
+
+    return CustomJsonResponse({"error": None})
+
+@star.route("/api/bill/pay", methods=["POST"])
+async def post_bill_pay(request):
+    data = await request.json()
+
+    async with AsyncClient() as client:
+        response = await client.get("http://payment-processor:8080/api/pay")
+        print("Payment processor response:", response, response.text)
+
+    async with pool.connection() as conn:
+        await conn.execute("update bills "
+                           "set date_paid = current_date "
+                           "where id = %s",
+                           (data["bill"],))
 
     return CustomJsonResponse({"error": None})
 

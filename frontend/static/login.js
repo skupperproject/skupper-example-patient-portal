@@ -6,11 +6,16 @@ const html = `
     <div>
       <h1>Patient Portal</h1>
 
-      <h2>Log in as a patient:</h2>
-      <nav id="patient-login-links"></nav>
-
-      <h2>Log in as a doctor:</h2>
-      <nav id="doctor-login-links"></nav>
+      <div class="hflex">
+        <div style="width: 20em;">
+          <h2>Log in as a patient:</h2>
+          <ul id="patient-login-links"></ul>
+        </div>
+        <div style="width: 20em;">
+          <h2>Log in as a doctor:</h2>
+          <ul id="doctor-login-links"></ul>
+        </div>
+      </div>
     </div>
   </section>
 </body>
@@ -18,10 +23,11 @@ const html = `
 
 function renderPatientLoginLinks(data) {
     const collection = data.patients;
-    const nav = gesso.createElement(null, "nav", {id: "patient-login-links", class: "login"});
+    const nav = gesso.createElement(null, "ul", {id: "patient-login-links", class: "login"});
 
     for (const item of Object.values(collection)) {
-        gesso.createLink(nav, `/patient?id=${item.id}`, item.name);
+        const li = gesso.createElement(nav, "li");
+        gesso.createLink(li, `/patient?id=${item.id}`, item.name);
     }
 
     gesso.replaceElement($("#patient-login-links"), nav);
@@ -29,10 +35,11 @@ function renderPatientLoginLinks(data) {
 
 function renderDoctorLoginLinks(data) {
     const collection = data.doctors;
-    const nav = gesso.createElement(null, "nav", {id: "doctor-login-links", class: "login"});
+    const nav = gesso.createElement(null, "ul", {id: "doctor-login-links", class: "login"});
 
     for (const item of Object.values(collection)) {
-        gesso.createLink(nav, `/doctor?id=${item.id}`, item.name);
+        const li = gesso.createElement(nav, "li");
+        gesso.createLink(li, `/doctor?id=${item.id}`, item.name);
     }
 
     gesso.replaceElement($("#doctor-login-links"), nav);

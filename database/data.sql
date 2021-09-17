@@ -95,3 +95,6 @@ values
   ('Leonard McCoy', '50201', 'bones@example.net'),
   ('Michaela Quinn', '50028', 'drmike@example.net'),
   ('Miranda Bailey', '98134', 'chief@example.net');
+
+insert into bills (patient_id, summary, amount)
+values (1, 'Knee surgery', 50);

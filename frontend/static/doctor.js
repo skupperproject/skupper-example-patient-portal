@@ -74,7 +74,7 @@ const appointmentRequestTable = new gesso.Table("appointment-request-table", [
     ["Date", "date"],
     ["Date is approximate?", "date_is_approximate", formatYesNo],
     ["Time of day", "time_of_day", (value) => gesso.capitalize(value)],
-    ["Actions", "id"],
+//    ["Actions", "id"],
 ]);
 
 const appointmentTable = new gesso.Table("appointment-table", [

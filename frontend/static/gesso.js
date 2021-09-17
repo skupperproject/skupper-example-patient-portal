@@ -36,6 +36,8 @@ export function capitalize(string) {
 export function nvl(value, replacement) {
     if (value === null || value === undefined) {
         return replacement;
+    } else {
+        return value;
     }
 }
 
@@ -298,8 +300,6 @@ export class Router {
 
         this.page.render();
         this.page.update();
-
-        // window.dispatchEvent(new Event("update"));
     }
 
     navigate(url) {
@@ -308,15 +308,6 @@ export class Router {
         this.route(url.pathname);
     }
 }
-
-// window.addEventListener("update", event => {
-//     fetch("/api/data", {
-//         method: "GET",
-//         headers: {"Content-Type": "application/json"},
-//     })
-//         .then(response => response.json())
-//         .then(data => router.page.update(data));
-// });
 
 export class Table {
     constructor(id, columns) {
@@ -378,8 +369,8 @@ export class Tabs {
         const tabs = $(`#${this.id}`);
 
         if (!selectedTabId) {
-            tabs.$(":scope > nav > a").classList.add("selected");
-            tabs.$(":scope > div").style.display = "inherit";
+            tabs.$(":scope > nav > a:first-of-type").classList.add("selected");
+            tabs.$(":scope > div:first-of-type").style.display = "inherit";
             return;
         }
 

@@ -12,8 +12,7 @@ const html = `
         <div class="form-field">
           <div>Patient</div>
           <div>
-            <select name="patient">
-              <option value="1">Angela Martin</option>
+            <select id="patient-selector" name="patient">
             </select>
           </div>
           <div>The patient for the appointment</div>
@@ -44,22 +43,29 @@ const html = `
 </body>
 `;
 
+function renderPatientSelector(items) {
+    const select = gesso.createElement(null, "select", {id: "patient-selector", name: "patient"});
+
+    for (const item of items) {
+        const option = gesso.createElement(select, "option", {value: item.id});
+        option.textContent = item.name;
+    }
+
+    gesso.replaceElement($("#patient-selector"), select);
+}
+
 export class CreatePage extends gesso.Page {
     constructor() {
         super(html);
-    }
 
-    render() {
-        super.render();
-
-        const doctorId = parseInt(new URL(window.location).searchParams.get("doctor"));
-
-        $("#appointment-form").addEventListener("submit", event => {
+        this.body.$("#appointment-form").addEventListener("submit", event => {
             event.preventDefault();
+
+            const doctorId = parseInt(event.target.doctor.value);
 
             gesso.post("/api/appointment/create", {
                 doctor: doctorId,
-                patient: parseInt(event.target.doctor.value),
+                patient: event.target.patient.value,
                 date: event.target.date.value,
                 time: event.target.time.value,
             });
@@ -68,9 +74,26 @@ export class CreatePage extends gesso.Page {
         });
     }
 
-    update(data) {
-        const doctorId = parseInt(new URL(window.location).searchParams.get("doctor"));
+    update() {
+        const doctorId = gesso.getIntParameter("doctor");
 
         $("#doctor").setAttribute("value", doctorId);
+
+        this.fetchData();
+    }
+
+    fetchData() {
+        fetch("/api/data", {
+            method: "GET",
+            headers: {"Content-Type": "application/json"},
+        })
+            .then(response => response.json())
+            .then(data => this.doUpdate(data));
+    }
+
+    doUpdate(data) {
+        const patients = Object.values(data.patients);
+
+        renderPatientSelector(patients);
     }
 }

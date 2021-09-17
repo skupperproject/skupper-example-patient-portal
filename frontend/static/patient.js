@@ -31,7 +31,7 @@ const html = `
 
     <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
 
-    <p>You have <b id="appointment-request-count">-</b> open appointment request(s).</p>
+    <p>You have <b id="appointment-request-count">-</b> appointment request(s).</p>
 
     <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
   </div>
@@ -69,6 +69,14 @@ const appointmentTable = new gesso.Table("appointment-table", [
     ["Doctor", "doctor_id", (id, data) => data.doctors[id].name],
     ["Date", "date"],
     ["Time", "time"],
+]);
+
+const billTable = new gesso.Table("bill-table", [
+    ["ID", "id"],
+    ["Summary", "summary"],
+    ["Amount", "amount", (amount) => `$${amount}`],
+    ["Date paid", "date_paid", (date) => gesso.nvl(date, "-")],
+    ["", "id", (id) => gesso.createLink(null, `/bill/pay?bill=${id}`, {class: "button", text: "Pay"})],
 ]);
 
 const doctorTable = new gesso.Table("doctor-table", [
@@ -116,8 +124,9 @@ export class MainPage extends gesso.Page {
         const id = gesso.getIntParameter("id");
         const name = data.patients[id].name;
         const appointmentRequestCreateLink = `/appointment-request/create?patient=${id}`;
-        const appointmentRequests = Object.values(data.appointment_requests).filter(item => item.patient_id = id);
+        const appointmentRequests = Object.values(data.appointment_requests).filter(item => item.patient_id === id);
         const appointments = Object.values(data.appointments).filter(item => item.patient_id === id);
+        const bills = Object.values(data.bills).filter(item => item.patient_id === id);
         const doctors = Object.values(data.doctors);
 
         $("#patient-name").textContent = name;
@@ -126,6 +135,7 @@ export class MainPage extends gesso.Page {
         $("#appointment-count").textContent = appointments.length;
 
         appointmentTable.render(appointments, data);
+        billTable.render(bills);
         doctorTable.render(doctors);
     }
 }

@@ -53,18 +53,14 @@ const html = `
 export class CreatePage extends gesso.Page {
     constructor() {
         super(html);
-    }
 
-    render() {
-        super.render();
-
-        const patientId = new URL(window.location).searchParams.get("patient");
-
-        $("#appointment-request-form").addEventListener("submit", event => {
+        this.body.$("#appointment-request-form").addEventListener("submit", event => {
             event.preventDefault();
 
+            const patientId = parseInt(event.target.patient.value);
+
             gesso.post("/api/appointment-request/create", {
-                patient: parseInt(event.target.patient.value),
+                patient: patientId,
                 date: event.target.date.value,
                 date_is_approximate: event.target.dateIsApproximate.value === "yes",
                 time_of_day: event.target.timeOfDay.value,
@@ -72,10 +68,11 @@ export class CreatePage extends gesso.Page {
 
             main.router.navigate(new URL(`/patient?id=${patientId}`, window.location));
         });
+
     }
 
-    update(data) {
-        const patientId = parseInt(new URL(window.location).searchParams.get("patient"));
+    update() {
+        const patientId = gesso.getIntParameter("patient");
 
         $("#patient").setAttribute("value", patientId);
     }
