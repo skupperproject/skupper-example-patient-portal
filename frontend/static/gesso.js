@@ -39,6 +39,14 @@ export function nvl(value, replacement) {
     }
 }
 
+export function getParameter(name) {
+    return new URL(window.location).searchParams.get(name);
+}
+
+export function getIntParameter(name) {
+    return parseInt(getParameter(name));
+}
+
 export function createElement(parent, tag, options) {
     const elem = document.createElement(tag);
 
@@ -247,7 +255,11 @@ export class Page {
         replaceElement($("body"), this.body);
     }
 
-    update(data) {
+    update() {
+        this.fetchData();
+    }
+
+    fetchData() {
     }
 }
 
@@ -285,8 +297,9 @@ export class Router {
         this.page = this.routes[path];
 
         this.page.render();
+        this.page.update();
 
-        window.dispatchEvent(new Event("update"));
+        // window.dispatchEvent(new Event("update"));
     }
 
     navigate(url) {

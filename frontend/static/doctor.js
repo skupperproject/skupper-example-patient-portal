@@ -95,6 +95,7 @@ const patientTable = new gesso.Table("patient-table", [
 export class MainPage extends gesso.Page {
     constructor() {
         super(html);
+        this.prevId = null;
     }
 
     render() {
@@ -102,10 +103,31 @@ export class MainPage extends gesso.Page {
         tabs.render();
     }
 
-    update(data) {
+    update() {
         tabs.update();
 
-        const id = parseInt(new URL(window.location).searchParams.get("id"));
+        const id = gesso.getIntParameter("id");
+
+        if (id === this.prevId) {
+            return;
+        }
+
+        this.prevId = id;
+
+        this.fetchData();
+    }
+
+    fetchData() {
+        fetch("/api/data", {
+            method: "GET",
+            headers: {"Content-Type": "application/json"},
+        })
+            .then(response => response.json())
+            .then(data => this.doUpdate(data));
+    }
+
+    doUpdate(data) {
+        const id = gesso.getIntParameter("id");
         const name = data.doctors[id].name;
         const appointmentCreateLink = `/appointment/create?doctor=${id}`;
         const appointmentRequests = Object.values(data.appointment_requests);

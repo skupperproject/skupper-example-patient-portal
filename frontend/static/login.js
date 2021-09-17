@@ -43,7 +43,16 @@ export class MainPage extends gesso.Page {
         super(html);
     }
 
-    update(data) {
+    fetchData() {
+        fetch("/api/data", {
+            method: "GET",
+            headers: {"Content-Type": "application/json"},
+        })
+            .then(response => response.json())
+            .then(data => this.doUpdate(data));
+    }
+
+    doUpdate(data) {
         renderPatientLoginLinks(data);
         renderDoctorLoginLinks(data);
     }

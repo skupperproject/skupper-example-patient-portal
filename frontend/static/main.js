@@ -13,15 +13,11 @@ export const router = new gesso.Router({
     "/appointment-request/create": new appointmentRequest.CreatePage(),
 });
 
-window.addEventListener("update", event => {
-    fetch("/api/data", {
-        method: "GET",
-        headers: {"Content-Type": "application/json"},
-    })
-        .then(response => response.json())
-        .then(data => router.page.update(data));
-});
+// window.addEventListener("update", event => {
+//     router.page.fetchData();
+// });
 
 new EventSource("/api/notifications").onmessage = event => {
-    window.dispatchEvent(new Event("update"));
+    router.page.fetchData();
+    // window.dispatchEvent(new Event("update"));
 };
