@@ -63,13 +63,19 @@ const html = `
 
 const tabs = new gesso.Tabs("tab");
 
+function createAppointmentLink(id) {
+    const doctorId = $p("id");
+    return gesso.createLink(null, `/appointment/create?doctor=${doctorId}&request=${id}`,
+                            {class: "button", text: "Create appointment"});
+}
+
 const appointmentRequestTable = new gesso.Table("appointment-request-table", [
     ["ID", "id"],
     ["Patient", "patient_id", (id, data) => data.patients[id].name],
     ["Date", "date"],
     ["Date is approximate?", "date_is_approximate", gesso.formatBoolean],
-    ["Time of day", "time_of_day", (value) => capitalize(value)],
-//    ["Actions", "id"],
+    ["Time of day", "time_of_day", capitalize],
+    ["", "id", createAppointmentLink],
 ]);
 
 const appointmentTable = new gesso.Table("appointment-table", [

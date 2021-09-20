@@ -7,8 +7,6 @@ const html = `
     <div>
       <h1>Create an appointment</h1>
       <form id="appointment-form">
-        <input id="doctor" type="hidden" name="doctor"/>
-
         <div class="form-field">
           <div>Patient</div>
           <div>
@@ -43,12 +41,16 @@ const html = `
 </body>
 `;
 
-function updatePatientSelector(items) {
+function updatePatientSelector(items, selectedId) {
     const select = gesso.createElement(null, "select", {id: "patient-selector", name: "patient"});
 
     for (const item of items) {
         const option = gesso.createElement(select, "option", {value: item.id});
         option.textContent = item.name;
+
+        if (item.id === selectedId) {
+            option.setAttribute("selected", "selected");
+        }
     }
 
     gesso.replaceElement($("#patient-selector"), select);
@@ -61,7 +63,7 @@ export class CreatePage extends gesso.Page {
         this.body.$("#appointment-form").addEventListener("submit", event => {
             event.preventDefault();
 
-            const doctorId = parseInt(event.target.doctor.value);
+            const doctorId = parseInt($p("doctor"));
 
             gesso.postJson("/api/appointment/create", {
                 doctor: doctorId,
@@ -70,18 +72,20 @@ export class CreatePage extends gesso.Page {
                 time: event.target.time.value,
             });
 
-            main.router.navigate(new URL(`/doctor?id=${doctorId}&tab=appointments`, window.location));
+            this.router.navigate(new URL(`/doctor?id=${doctorId}&tab=appointments`, window.location));
         });
     }
 
-    updateView() {
-        $("#doctor").setAttribute("value", $p("doctor"));
+    getContentKey() {
+        return [this.page, $p("request")].join();
     }
 
     updateContent() {
         gesso.getJson("/api/data", data => {
+            const request = data.appointment_requests[$p("request")];
             const patients = Object.values(data.patients);
-            updatePatientSelector(patients);
+
+            updatePatientSelector(patients, request.patient_id);
         });
     }
 }

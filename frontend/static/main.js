@@ -15,26 +15,6 @@ new appointment.CreatePage(router);
 new appointmentRequest.CreatePage(router);
 new bill.PayPage(router);
 
-// {
-//     "/": new login.MainPage(),
-//     "/patient": new patient.MainPage(),
-//     "/doctor": new doctor.MainPage(),
-//     "/appointment/create": new appointment.CreatePage(),
-//     "/appointment-request/create": new appointmentRequest.CreatePage(),
-//     "/bill/pay": new bill.PayPage(),
-// });
-
 new EventSource("/api/notifications").onmessage = event => {
     router.page.updateContent();
 };
-
-export function isParameterChanged(name) {
-    if (!router.previousUrl) {
-        return false;
-    }
-
-    const prev = router.previousUrl.$p(name);
-    const curr = $p(name);
-
-    return curr !== prev;
-}

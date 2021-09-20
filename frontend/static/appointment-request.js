@@ -57,7 +57,7 @@ export class CreatePage extends gesso.Page {
         this.body.$("#appointment-request-form").addEventListener("submit", event => {
             event.preventDefault();
 
-            const patientId = parseInt(event.target.patient.value);
+            const patientId = parseInt($p("patient"));
 
             gesso.postJson("/api/appointment-request/create", {
                 patient: patientId,
@@ -66,11 +66,7 @@ export class CreatePage extends gesso.Page {
                 time_of_day: event.target.timeOfDay.value,
             });
 
-            main.router.navigate(new URL(`/patient?id=${patientId}`, window.location));
+            this.router.navigate(new URL(`/patient?id=${patientId}`, window.location));
         });
-    }
-
-    updateView() {
-        $("#patient").setAttribute("value", $p("patient"));
     }
 }
