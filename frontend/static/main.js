@@ -6,17 +6,26 @@ import * as gesso from "./gesso.js";
 import * as login from "./login.js";
 import * as patient from "./patient.js";
 
-export const router = new gesso.Router({
-    "/": new login.MainPage(),
-    "/patient": new patient.MainPage(),
-    "/doctor": new doctor.MainPage(),
-    "/appointment/create": new appointment.CreatePage(),
-    "/appointment-request/create": new appointmentRequest.CreatePage(),
-    "/bill/pay": new bill.PayPage(),
-});
+export const router = new gesso.Router();
+
+new login.MainPage(router);
+new patient.MainPage(router);
+new doctor.MainPage(router);
+new appointment.CreatePage(router);
+new appointmentRequest.CreatePage(router);
+new bill.PayPage(router);
+
+// {
+//     "/": new login.MainPage(),
+//     "/patient": new patient.MainPage(),
+//     "/doctor": new doctor.MainPage(),
+//     "/appointment/create": new appointment.CreatePage(),
+//     "/appointment-request/create": new appointmentRequest.CreatePage(),
+//     "/bill/pay": new bill.PayPage(),
+// });
 
 new EventSource("/api/notifications").onmessage = event => {
-    router.page.update();
+    router.page.updateContent();
 };
 
 export function isParameterChanged(name) {

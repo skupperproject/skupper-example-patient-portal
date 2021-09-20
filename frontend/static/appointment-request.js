@@ -51,15 +51,15 @@ const html = `
 `;
 
 export class CreatePage extends gesso.Page {
-    constructor() {
-        super(html);
+    constructor(router) {
+        super(router, "/appointment-request/create", html);
 
         this.body.$("#appointment-request-form").addEventListener("submit", event => {
             event.preventDefault();
 
             const patientId = parseInt(event.target.patient.value);
 
-            gesso.post("/api/appointment-request/create", {
+            gesso.postJson("/api/appointment-request/create", {
                 patient: patientId,
                 date: event.target.date.value,
                 date_is_approximate: event.target.dateIsApproximate.value === "yes",
@@ -68,10 +68,9 @@ export class CreatePage extends gesso.Page {
 
             main.router.navigate(new URL(`/patient?id=${patientId}`, window.location));
         });
-
     }
 
-    update() {
+    updateView() {
         $("#patient").setAttribute("value", $p("patient"));
     }
 }

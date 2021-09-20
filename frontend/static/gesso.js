@@ -263,30 +263,50 @@ export function postJson(url, data) {
 }
 
 export class Page {
-    constructor(html) {
-        if (!html) {
-            return;
-        }
+    constructor(router, path, html) {
+        this.router = router;
+        this.path = path;
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
 
         this.body = doc.activeElement;
+
+        this.router.routes[this.path] = this;
     }
 
     render() {
         replaceElement($("body"), this.body);
     }
 
-    update(force) {
+    update() {
+        const key = this.getContentKey();
+
+        this.updateView();
+
+        if (key !== this.router.previousContentKey) {
+            this.updateContent();
+        }
+
+        this.router.previousContentKey = key;
+    }
+
+    getContentKey() {
+        return [this.path].join();
+    }
+
+    updateView() {
+    }
+
+    updateContent() {
     }
 }
 
 export class Router {
-    constructor(routes) {
-        this.routes = routes;
+    constructor() {
+        this.routes = {};
         this.page = null;
-        this.previousUrl = null;
+        this.previousContentKey = null;
 
         this.addEventListeners();
     }
@@ -308,10 +328,10 @@ export class Router {
         });
     }
 
-    route(path, force) {
+    route(path) {
         this.page = this.routes[path];
         this.page.render();
-        this.page.update(force);
+        this.page.update();
     }
 
     navigate(url) {
@@ -319,11 +339,8 @@ export class Router {
             return;
         }
 
-        this.previousUrl = new URL(window.location);
-
         window.history.pushState({}, null, url);
-
-        this.route(url.pathname, false);
+        this.route(url.pathname);
     }
 }
 

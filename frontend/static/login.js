@@ -46,16 +46,14 @@ function updateDoctorLoginLinks(data) {
 }
 
 export class MainPage extends gesso.Page {
-    constructor() {
-        super(html);
+    constructor(router) {
+        super(router, "/", html);
     }
 
-    update() {
-        gesso.getJson("/api/data", data => this.doUpdate(data));
-    }
-
-    doUpdate(data) {
-        updatePatientLoginLinks(data);
-        updateDoctorLoginLinks(data);
+    updateContent() {
+        gesso.getJson("/api/data", data => {
+            updatePatientLoginLinks(data);
+            updateDoctorLoginLinks(data);
+        });
     }
 }

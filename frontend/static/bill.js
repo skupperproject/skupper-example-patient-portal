@@ -36,8 +36,8 @@ const html = `
 `;
 
 export class PayPage extends gesso.Page {
-    constructor() {
-        super(html);
+    constructor(router) {
+        super(router, "/bill/pay", html);
 
         this.body.$("#bill-form").addEventListener("submit", event => {
             event.preventDefault();
@@ -45,7 +45,7 @@ export class PayPage extends gesso.Page {
             const billId = parseInt(event.target.bill.value);
             const patientId = parseInt(event.target.patient.value);
 
-            gesso.post("/api/bill/pay", {
+            gesso.postJson("/api/bill/pay", {
                 bill: billId,
             });
 
@@ -53,22 +53,19 @@ export class PayPage extends gesso.Page {
         });
     }
 
-    update() {
-        $("#bill").setAttribute("value", $p("bill"));
-
-        fetch("/api/data", {
-            method: "GET",
-            headers: {"Content-Type": "application/json"},
-        })
-            .then(response => response.json())
-            .then(data => this.doUpdate(data));
+    getContentKey() {
+        return [this.path, $p("bill")].join();
     }
 
-    doUpdate(data) {
-        const billId = parseInt($p("bill"));
-        const bill = data.bills[billId];
+    updateContent() {
+        $("#bill").setAttribute("value", $p("bill"));
 
-        $("#patient").setAttribute("value", bill.patient_id);
-        $("#amount").setAttribute("value", bill.amount);
+        gesso.getJson("/api/data", data => {
+            const billId = parseInt($p("bill"));
+            const bill = data.bills[billId];
+
+            $("#patient").setAttribute("value", bill.patient_id);
+            $("#amount").setAttribute("value", bill.amount);
+        });
     }
 }

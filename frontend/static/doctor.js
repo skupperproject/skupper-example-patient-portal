@@ -88,31 +88,33 @@ const patientTable = new gesso.Table("patient-table", [
 ]);
 
 export class MainPage extends gesso.Page {
-    constructor() {
-        super(html);
+    constructor(router) {
+        super(router, "/doctor", html);
     }
 
-    update(force) {
+    getContentKey() {
+        return [this.path, $p("id")].join();
+    }
+
+    updateView() {
         tabs.update();
-
-        if (force || main.isParameterChanged("id")) {
-            gesso.getJson("/api/data", data => this.doUpdate(data));
-        }
     }
 
-    doUpdate(data) {
-        const id = parseInt($p("id"));
-        const name = data.doctors[id].name;
-        const appointmentCreateLink = `/appointment/create?doctor=${id}`;
-        const appointmentRequests = Object.values(data.appointment_requests);
-        const appointments = Object.values(data.appointments) .filter(item => item.doctor_id === id);
-        const patients = Object.values(data.patients);
+    updateContent() {
+        gesso.getJson("/api/data", data => {
+            const id = parseInt($p("id"));
+            const name = data.doctors[id].name;
+            const appointmentCreateLink = `/appointment/create?doctor=${id}`;
+            const appointmentRequests = Object.values(data.appointment_requests);
+            const appointments = Object.values(data.appointments) .filter(item => item.doctor_id === id);
+            const patients = Object.values(data.patients);
 
-        $("#doctor-name").textContent = name;
-        $("#appointment-create-link").setAttribute("href", appointmentCreateLink);
+            $("#doctor-name").textContent = name;
+            $("#appointment-create-link").setAttribute("href", appointmentCreateLink);
 
-        appointmentRequestTable.update(appointmentRequests, data);
-        appointmentTable.update(appointments, data);
-        patientTable.update(patients, data);
+            appointmentRequestTable.update(appointmentRequests, data);
+            appointmentTable.update(appointments, data);
+            patientTable.update(patients, data);
+        });
     }
 }

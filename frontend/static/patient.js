@@ -87,34 +87,36 @@ const doctorTable = new gesso.Table("doctor-table", [
 ]);
 
 export class MainPage extends gesso.Page {
-    constructor() {
-        super(html);
+    constructor(router) {
+        super(router, "/patient", html);
     }
 
-    update(force) {
+    getContentKey() {
+        return [this.path, $p("id")].join();
+    }
+
+    updateView() {
         tabs.update();
-
-        if (force || main.isParameterChanged("id")) {
-            gesso.getJson("/api/data", data => this.doUpdate(data));
-        }
     }
 
-    doUpdate(data) {
-        const id = parseInt($p("id"));
-        const name = data.patients[id].name;
-        const appointmentRequestCreateLink = `/appointment-request/create?patient=${id}`;
-        const appointmentRequests = Object.values(data.appointment_requests).filter(item => item.patient_id === id);
-        const appointments = Object.values(data.appointments).filter(item => item.patient_id === id);
-        const bills = Object.values(data.bills).filter(item => item.patient_id === id);
-        const doctors = Object.values(data.doctors);
+    updateContent() {
+        gesso.getJson("/api/data", data => {
+            const id = parseInt($p("id"));
+            const name = data.patients[id].name;
+            const appointmentRequestCreateLink = `/appointment-request/create?patient=${id}`;
+            const appointmentRequests = Object.values(data.appointment_requests).filter(item => item.patient_id === id);
+            const appointments = Object.values(data.appointments).filter(item => item.patient_id === id);
+            const bills = Object.values(data.bills).filter(item => item.patient_id === id);
+            const doctors = Object.values(data.doctors);
 
-        $("#patient-name").textContent = name;
-        $("#appointment-request-create-link").setAttribute("href", appointmentRequestCreateLink);
-        $("#appointment-request-count").textContent = appointmentRequests.length;
-        $("#appointment-count").textContent = appointments.length;
+            $("#patient-name").textContent = name;
+            $("#appointment-request-create-link").setAttribute("href", appointmentRequestCreateLink);
+            $("#appointment-request-count").textContent = appointmentRequests.length;
+            $("#appointment-count").textContent = appointments.length;
 
-        appointmentTable.update(appointments, data);
-        billTable.update(bills);
-        doctorTable.update(doctors);
+            appointmentTable.update(appointments, data);
+            billTable.update(bills);
+            doctorTable.update(doctors);
+        });
     }
 }

@@ -55,15 +55,15 @@ function renderPatientSelector(items) {
 }
 
 export class CreatePage extends gesso.Page {
-    constructor() {
-        super(html);
+    constructor(router) {
+        super(router, "/appointment/create", html);
 
         this.body.$("#appointment-form").addEventListener("submit", event => {
             event.preventDefault();
 
             const doctorId = parseInt(event.target.doctor.value);
 
-            gesso.post("/api/appointment/create", {
+            gesso.postJson("/api/appointment/create", {
                 doctor: doctorId,
                 patient: event.target.patient.value,
                 date: event.target.date.value,
@@ -74,20 +74,15 @@ export class CreatePage extends gesso.Page {
         });
     }
 
-    update() {
+    updateView() {
         $("#doctor").setAttribute("value", $p("doctor"));
-
-        fetch("/api/data", {
-            method: "GET",
-            headers: {"Content-Type": "application/json"},
-        })
-            .then(response => response.json())
-            .then(data => this.doUpdate(data));
     }
 
-    doUpdate(data) {
-        const patients = Object.values(data.patients);
+    updateContent() {
+        gesso.getJson("/api/data", data => {
+            const patients = Object.values(data.patients);
 
-        renderPatientSelector(patients);
+            renderPatientSelector(patients);
+        });
     }
 }
