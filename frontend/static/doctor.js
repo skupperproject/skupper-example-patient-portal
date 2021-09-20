@@ -26,13 +26,13 @@ const html = `
     <a data-tab="patients">Patients</a>
   </nav>
 
-  <div id="appointment-requests">
+  <div data-tab="appointment-requests">
     <h1>Appointment requests</h1>
 
     <div id="appointment-request-table"></div>
   </div>
 
-  <div id="appointments">
+  <div data-tab="appointments">
     <div class="fnaz">
       <h1>Appointments</h1>
       <a class="button" id="appointment-create-link">Create appointment</a>
@@ -41,13 +41,13 @@ const html = `
     <div id="appointment-table"></div>
   </div>
 
-  <div id="bills">
+  <div data-tab="bills">
     <h1>Bills</h1>
 
     <div id="bill-table"></div>
   </div>
 
-  <div id="patients">
+  <div data-tab="patients">
     <h1>Patients</h1>
 
     <div id="patient-table"></div>

@@ -26,7 +26,7 @@ const html = `
     <a data-tab="doctors">Doctors</a>
   </nav>
 
-  <div id="overview">
+  <div data-tab="overview">
     <h1>Welcome!</h1>
 
     <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
@@ -36,19 +36,19 @@ const html = `
     <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
   </div>
 
-  <div id="appointments">
+  <div data-tab="appointments">
     <h1>Appointments</h1>
 
     <div id="appointment-table"></div>
   </div>
 
-  <div id="bills">
+  <div data-tab="bills">
     <h1>Bills</h1>
 
     <div id="bill-table"></div>
   </div>
 
-  <div id="doctors">
+  <div data-tab="doctors">
     <h1>Doctors</h1>
 
     <div id="doctor-table"></div>
@@ -74,9 +74,9 @@ const appointmentTable = new gesso.Table("appointment-table", [
 const billTable = new gesso.Table("bill-table", [
     ["ID", "id"],
     ["Summary", "summary"],
-    ["Amount", "amount", (amount) => `$${amount}`],
-    ["Date paid", "date_paid", (date) => nvl(date, "-")],
-    ["", "id", (id) => gesso.createLink(null, `/bill/pay?bill=${id}`, {class: "button", text: "Pay"})],
+    ["Amount", "amount", amount => `$${amount}`],
+    ["Date paid", "date_paid", date => nvl(date, "-")],
+    ["", "id", id => gesso.createLink(null, `/bill/pay?bill=${id}`, {class: "button", text: "Pay"})],
 ]);
 
 const doctorTable = new gesso.Table("doctor-table", [

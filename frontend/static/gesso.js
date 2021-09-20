@@ -100,7 +100,7 @@ export function createText(parent, text) {
     return node;
 }
 
-function _setSelector(elem, selector) {
+function setSelector(elem, selector) {
     if (selector == null) {
         return;
     }
@@ -115,7 +115,7 @@ function _setSelector(elem, selector) {
 export function createDiv(parent, selector, options) {
     const elem = createElement(parent, "div", options);
 
-    _setSelector(elem, selector);
+    setSelector(elem, selector);
 
     return elem;
 }
@@ -123,7 +123,7 @@ export function createDiv(parent, selector, options) {
 export function createSpan(parent, selector, options) {
     const elem = createElement(parent, "span", options);
 
-    _setSelector(elem, selector);
+    setSelector(elem, selector);
 
     return elem;
 }
@@ -418,6 +418,6 @@ export class Tabs {
         const selectedTab = $p(this.id, links[0].dataset.tab);
 
         container.$(`:scope > nav > a[data-tab='${selectedTab}']`).classList.add("selected");
-        container.$(`:scope > div[id='${selectedTab}']`).classList.add("selected");
+        container.$(`:scope > div[data-tab='${selectedTab}']`).classList.add("selected");
     }
 }

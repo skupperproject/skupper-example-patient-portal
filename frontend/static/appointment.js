@@ -43,7 +43,7 @@ const html = `
 </body>
 `;
 
-function renderPatientSelector(items) {
+function updatePatientSelector(items) {
     const select = gesso.createElement(null, "select", {id: "patient-selector", name: "patient"});
 
     for (const item of items) {
@@ -81,8 +81,7 @@ export class CreatePage extends gesso.Page {
     updateContent() {
         gesso.getJson("/api/data", data => {
             const patients = Object.values(data.patients);
-
-            renderPatientSelector(patients);
+            updatePatientSelector(patients);
         });
     }
 }
