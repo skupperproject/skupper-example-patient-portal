@@ -75,14 +75,8 @@ export class CreatePage extends gesso.Page {
     }
 
     update() {
-        const doctorId = gesso.getIntParameter("doctor");
+        $("#doctor").setAttribute("value", $p("doctor"));
 
-        $("#doctor").setAttribute("value", doctorId);
-
-        this.fetchData();
-    }
-
-    fetchData() {
         fetch("/api/data", {
             method: "GET",
             headers: {"Content-Type": "application/json"},

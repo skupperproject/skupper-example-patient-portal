@@ -72,8 +72,6 @@ export class CreatePage extends gesso.Page {
     }
 
     update() {
-        const patientId = gesso.getIntParameter("patient");
-
-        $("#patient").setAttribute("value", patientId);
+        $("#patient").setAttribute("value", $p("patient"));
     }
 }

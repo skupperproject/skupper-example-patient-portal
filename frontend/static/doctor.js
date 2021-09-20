@@ -73,7 +73,7 @@ const appointmentRequestTable = new gesso.Table("appointment-request-table", [
     ["Patient", "patient_id", (id, data) => data.patients[id].name],
     ["Date", "date"],
     ["Date is approximate?", "date_is_approximate", formatYesNo],
-    ["Time of day", "time_of_day", (value) => gesso.capitalize(value)],
+    ["Time of day", "time_of_day", (value) => capitalize(value)],
 //    ["Actions", "id"],
 ]);
 
@@ -95,7 +95,6 @@ const patientTable = new gesso.Table("patient-table", [
 export class MainPage extends gesso.Page {
     constructor() {
         super(html);
-        this.prevId = null;
     }
 
     render() {
@@ -103,31 +102,21 @@ export class MainPage extends gesso.Page {
         tabs.render();
     }
 
-    update() {
+    update(force) {
         tabs.update();
 
-        const id = gesso.getIntParameter("id");
-
-        if (id === this.prevId) {
-            return;
+        if (force || main.isParameterChanged("id")) {
+            fetch("/api/data", {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+            })
+                .then(response => response.json())
+                .then(data => this.doUpdate(data));
         }
-
-        this.prevId = id;
-
-        this.fetchData();
-    }
-
-    fetchData() {
-        fetch("/api/data", {
-            method: "GET",
-            headers: {"Content-Type": "application/json"},
-        })
-            .then(response => response.json())
-            .then(data => this.doUpdate(data));
     }
 
     doUpdate(data) {
-        const id = gesso.getIntParameter("id");
+        const id = parseInt($p("id"));
         const name = data.doctors[id].name;
         const appointmentCreateLink = `/appointment/create?doctor=${id}`;
         const appointmentRequests = Object.values(data.appointment_requests);

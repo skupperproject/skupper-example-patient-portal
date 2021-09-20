@@ -54,14 +54,8 @@ export class PayPage extends gesso.Page {
     }
 
     update() {
-        const billId = gesso.getIntParameter("bill");
+        $("#bill").setAttribute("value", $p("bill"));
 
-        $("#bill").setAttribute("value", billId);
-
-        this.fetchData();
-    }
-
-    fetchData() {
         fetch("/api/data", {
             method: "GET",
             headers: {"Content-Type": "application/json"},
@@ -71,7 +65,7 @@ export class PayPage extends gesso.Page {
     }
 
     doUpdate(data) {
-        const billId = gesso.getIntParameter("bill");
+        const billId = parseInt($p("bill"));
         const bill = data.bills[billId];
 
         $("#patient").setAttribute("value", bill.patient_id);

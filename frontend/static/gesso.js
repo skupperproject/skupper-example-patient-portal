@@ -26,14 +26,19 @@ Element.prototype.$$ = function () {
   return this.querySelectorAll.apply(this, arguments);
 };
 
-window.$ = $;
-window.$$ = $$;
+URL.prototype.$p = function $p(name) {
+    return this.searchParams.get(name);
+}
 
-export function capitalize(string) {
+const $p = function (name) {
+    return new URL(window.location).$p(name);
+}
+
+function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export function nvl(value, replacement) {
+function nvl(value, replacement) {
     if (value === null || value === undefined) {
         return replacement;
     } else {
@@ -41,13 +46,11 @@ export function nvl(value, replacement) {
     }
 }
 
-export function getParameter(name) {
-    return new URL(window.location).searchParams.get(name);
-}
-
-export function getIntParameter(name) {
-    return parseInt(getParameter(name));
-}
+window.$ = $;
+window.$$ = $$;
+window.$p = $p;
+window.capitalize = capitalize;
+window.nvl = nvl;
 
 export function createElement(parent, tag, options) {
     const elem = document.createElement(tag);
@@ -257,11 +260,7 @@ export class Page {
         replaceElement($("body"), this.body);
     }
 
-    update() {
-        this.fetchData();
-    }
-
-    fetchData() {
+    update(force) {
     }
 }
 
@@ -269,43 +268,44 @@ export class Router {
     constructor(routes) {
         this.routes = routes;
         this.page = null;
+        this.previousUrl = null;
 
         this.addEventListeners();
     }
 
     addEventListeners() {
         window.addEventListener("popstate", () => {
-            this.route(window.location.pathname);
+            this.route(window.location.pathname, false);
         });
 
         window.addEventListener("load", () => {
-            this.route(window.location.pathname);
+            this.route(window.location.pathname, true);
         });
 
         window.addEventListener("click", event => {
             if (event.target.tagName === "A") {
                 event.preventDefault();
-
-                const url = new URL(event.target.href, window.location);
-
-                if (url.href != window.location.href) {
-                    this.navigate(url);
-                }
+                this.navigate(new URL(event.target.href, window.location));
             }
         });
     }
 
-    route(path) {
+    route(path, force) {
         this.page = this.routes[path];
-
         this.page.render();
-        this.page.update();
+        this.page.update(force);
     }
 
     navigate(url) {
+        if (url.href === window.location.href) {
+            return;
+        }
+
+        this.previousUrl = new URL(window.location);
+
         window.history.pushState({}, null, url);
 
-        this.route(url.pathname);
+        this.route(url.pathname, false);
     }
 }
 

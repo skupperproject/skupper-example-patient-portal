@@ -50,7 +50,7 @@ export class MainPage extends gesso.Page {
         super(html);
     }
 
-    fetchData() {
+    update() {
         fetch("/api/data", {
             method: "GET",
             headers: {"Content-Type": "application/json"},

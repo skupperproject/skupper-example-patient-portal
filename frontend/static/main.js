@@ -16,5 +16,16 @@ export const router = new gesso.Router({
 });
 
 new EventSource("/api/notifications").onmessage = event => {
-    router.page.fetchData();
+    router.page.update();
 };
+
+export function isParameterChanged(name) {
+    if (!router.previousUrl) {
+        return false;
+    }
+
+    const prev = router.previousUrl.$p(name);
+    const curr = $p(name);
+
+    return curr !== prev;
+}
