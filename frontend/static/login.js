@@ -21,7 +21,7 @@ const html = `
 </body>
 `;
 
-function renderPatientLoginLinks(data) {
+function updatePatientLoginLinks(data) {
     const collection = data.patients;
     const nav = gesso.createElement(null, "ul", {id: "patient-login-links", class: "login"});
 
@@ -33,7 +33,7 @@ function renderPatientLoginLinks(data) {
     gesso.replaceElement($("#patient-login-links"), nav);
 }
 
-function renderDoctorLoginLinks(data) {
+function updateDoctorLoginLinks(data) {
     const collection = data.doctors;
     const nav = gesso.createElement(null, "ul", {id: "doctor-login-links", class: "login"});
 
@@ -51,16 +51,11 @@ export class MainPage extends gesso.Page {
     }
 
     update() {
-        fetch("/api/data", {
-            method: "GET",
-            headers: {"Content-Type": "application/json"},
-        })
-            .then(response => response.json())
-            .then(data => this.doUpdate(data));
+        gesso.getJson("/api/data", data => this.doUpdate(data));
     }
 
     doUpdate(data) {
-        renderPatientLoginLinks(data);
-        renderDoctorLoginLinks(data);
+        updatePatientLoginLinks(data);
+        updateDoctorLoginLinks(data);
     }
 }

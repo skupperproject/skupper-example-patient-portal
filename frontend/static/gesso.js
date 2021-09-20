@@ -232,8 +232,26 @@ export function formatDurationBrief(millis) {
     return formatDuration(millis, ["y", "w", "d", "h", "m", "s", "ms"]);
 }
 
-export function post(url, data) {
-    // console.log("Posting data to", url, data);
+export function formatBoolean(value) {
+    if (value) return "Yes";
+    else return "No";
+}
+
+export function getJson(url, handler) {
+    console.log("Getting data from", url);
+
+    fetch(url, {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    })
+        .then(response => response.json())
+        .then(data => handler(data));
+
+    // XXX errors
+}
+
+export function postJson(url, data) {
+    console.log("Posting data to", url);
 
     fetch(url, {
         method: "POST",
@@ -315,7 +333,7 @@ export class Table {
         this.columns = columns;
     }
 
-    render(items, context) {
+    update(items, context) {
         const headings = [];
         const rows = [];
         const div = createDiv(null, `#${this.id}`);
@@ -353,7 +371,7 @@ export class Tabs {
         this.id = id;
     }
 
-    render() {
+    update() {
         const links = $$(`#${this.id} > nav > a`);
 
         for (const link of links) {
@@ -361,9 +379,7 @@ export class Tabs {
             url.searchParams.set(this.id, link.dataset.tab);
             link.setAttribute("href", url.href);
         }
-    }
 
-    update() {
         const url = new URL(window.location);
         const selectedTabId = url.searchParams.get(this.id);
         const tabs = $(`#${this.id}`);
@@ -383,6 +399,7 @@ export class Tabs {
         }
 
         for (const pane of tabs.$$(":scope > div")) {
+            console.log(333, pane.id, "===", selectedTabId);
             if (pane.id === selectedTabId) {
                 pane.style.display = "inherit";
             } else {

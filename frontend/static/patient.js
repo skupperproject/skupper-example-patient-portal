@@ -75,7 +75,7 @@ const billTable = new gesso.Table("bill-table", [
     ["ID", "id"],
     ["Summary", "summary"],
     ["Amount", "amount", (amount) => `$${amount}`],
-    ["Date paid", "date_paid", (date) => gesso.nvl(date, "-")],
+    ["Date paid", "date_paid", (date) => nvl(date, "-")],
     ["", "id", (id) => gesso.createLink(null, `/bill/pay?bill=${id}`, {class: "button", text: "Pay"})],
 ]);
 
@@ -91,21 +91,11 @@ export class MainPage extends gesso.Page {
         super(html);
     }
 
-    render() {
-        super.render();
-        tabs.render();
-    }
-
     update(force) {
         tabs.update();
 
         if (force || main.isParameterChanged("id")) {
-            fetch("/api/data", {
-                method: "GET",
-                headers: {"Content-Type": "application/json"},
-            })
-                .then(response => response.json())
-                .then(data => this.doUpdate(data));
+            gesso.getJson("/api/data", data => this.doUpdate(data));
         }
     }
 
@@ -123,8 +113,8 @@ export class MainPage extends gesso.Page {
         $("#appointment-request-count").textContent = appointmentRequests.length;
         $("#appointment-count").textContent = appointments.length;
 
-        appointmentTable.render(appointments, data);
-        billTable.render(bills);
-        doctorTable.render(doctors);
+        appointmentTable.update(appointments, data);
+        billTable.update(bills);
+        doctorTable.update(doctors);
     }
 }

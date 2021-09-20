@@ -89,12 +89,12 @@ values
 insert into doctors
   (name, phone, email)
 values
-  ('Benjamin Pierce', '03785', 'hawkeye@example.net'),
-  ('Beverly Crusher', '90747', 'gates@example.net'),
-  ('Doogie Howser', '91311', 'neil@example.net'),
-  ('Leonard McCoy', '50201', 'bones@example.net'),
-  ('Michaela Quinn', '50028', 'drmike@example.net'),
-  ('Miranda Bailey', '98134', 'chief@example.net');
+  ('Benjamin Pierce', '555-555-1001', 'hawkeye@example.net'),
+  ('Beverly Crusher', '555-555-1002', 'gates@example.net'),
+  ('Doogie Howser', '555-555-1003', 'neil@example.net'),
+  ('Leonard McCoy', '555-555-1004', 'bones@example.net'),
+  ('Michaela Quinn', '555-555-1005', 'drmike@example.net'),
+  ('Miranda Bailey', '555-555-1006', 'chief@example.net');
 
 insert into bills (patient_id, summary, amount)
 values (1, 'Knee surgery', 50);

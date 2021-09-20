@@ -63,16 +63,11 @@ const html = `
 
 const tabs = new gesso.Tabs("tab");
 
-function formatYesNo(value) {
-    if (value) return "Yes";
-    else return "No";
-}
-
 const appointmentRequestTable = new gesso.Table("appointment-request-table", [
     ["ID", "id"],
     ["Patient", "patient_id", (id, data) => data.patients[id].name],
     ["Date", "date"],
-    ["Date is approximate?", "date_is_approximate", formatYesNo],
+    ["Date is approximate?", "date_is_approximate", gesso.formatBoolean],
     ["Time of day", "time_of_day", (value) => capitalize(value)],
 //    ["Actions", "id"],
 ]);
@@ -97,21 +92,11 @@ export class MainPage extends gesso.Page {
         super(html);
     }
 
-    render() {
-        super.render();
-        tabs.render();
-    }
-
     update(force) {
         tabs.update();
 
         if (force || main.isParameterChanged("id")) {
-            fetch("/api/data", {
-                method: "GET",
-                headers: {"Content-Type": "application/json"},
-            })
-                .then(response => response.json())
-                .then(data => this.doUpdate(data));
+            gesso.getJson("/api/data", data => this.doUpdate(data));
         }
     }
 
@@ -126,8 +111,8 @@ export class MainPage extends gesso.Page {
         $("#doctor-name").textContent = name;
         $("#appointment-create-link").setAttribute("href", appointmentCreateLink);
 
-        appointmentRequestTable.render(appointmentRequests, data);
-        appointmentTable.render(appointments, data);
-        patientTable.render(patients, data);
+        appointmentRequestTable.update(appointmentRequests, data);
+        appointmentTable.update(appointments, data);
+        patientTable.update(patients, data);
     }
 }
