@@ -26,12 +26,18 @@ Element.prototype.$$ = function () {
   return this.querySelectorAll.apply(this, arguments);
 };
 
-URL.prototype.$p = function $p(name) {
-    return this.searchParams.get(name);
+URL.prototype.$p = function $p(name, defaultValue) {
+    let value = this.searchParams.get(name);
+
+    if (value === null || value === undefined) {
+        value = defaultValue;
+    }
+
+    return value;
 }
 
-const $p = function (name) {
-    return new URL(window.location).$p(name);
+const $p = function (name, defaultValue) {
+    return new URL(window.location).$p(name, defaultValue);
 }
 
 function capitalize(string) {
@@ -389,39 +395,29 @@ export class Tabs {
     }
 
     update() {
-        const links = $$(`#${this.id} > nav > a`);
+        const container = $(`div#${this.id}`);
+        const links = container.$$(`:scope > nav > a`);
+        const tabs = container.$$(`:scope > div`);
+
+        console.assert(links.length > 0);
+        console.assert(tabs.length > 0);
+        console.assert(links.length === tabs.length);
 
         for (const link of links) {
             const url = new URL(window.location);
             url.searchParams.set(this.id, link.dataset.tab);
+
             link.setAttribute("href", url.href);
+            link.classList.remove("selected");
         }
 
-        const url = new URL(window.location);
-        const selectedTabId = url.searchParams.get(this.id);
-        const tabs = $(`#${this.id}`);
-
-        if (!selectedTabId) {
-            tabs.$(":scope > nav > a:first-of-type").classList.add("selected");
-            tabs.$(":scope > div:first-of-type").style.display = "inherit";
-            return;
+        for (const tab of tabs) {
+            tab.classList.remove("selected");
         }
 
-        for (const link of tabs.$$(":scope > nav > a")) {
-            if (link.href === url.href) {
-                link.classList.add("selected");
-            } else {
-                link.classList.remove("selected");
-            }
-        }
+        const selectedTab = $p(this.id, links[0].dataset.tab);
 
-        for (const pane of tabs.$$(":scope > div")) {
-            console.log(333, pane.id, "===", selectedTabId);
-            if (pane.id === selectedTabId) {
-                pane.style.display = "inherit";
-            } else {
-                pane.style.display = "none";
-            }
-        }
+        container.$(`:scope > nav > a[data-tab='${selectedTab}']`).classList.add("selected");
+        container.$(`:scope > div[id='${selectedTab}']`).classList.add("selected");
     }
 }

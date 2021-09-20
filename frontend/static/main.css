@@ -1,6 +1,7 @@
 @import url("/static/general.css");
 @import url("/static/layout.css");
 @import url("/static/tables.css");
+@import url("/static/tabs.css");
 @import url("/static/forms.css");
 
 select {
@@ -59,32 +60,6 @@ button:hover {
 }
 
 /* --- */
-
-.tabs {
-}
-
-.tabs > nav {
-    diplay: flex;
-    margin-top: -0.4em;
-    margin-bottom: 1.6em;
-}
-
-.tabs > nav > a {
-    display: inline-block;
-    padding: 0.4em 0;
-    margin-right: 2em;
-    color: #666;
-}
-
-.tabs > nav > a:hover,
-.tabs > nav > a.selected {
-    border-bottom: 1.5px solid black;
-    color: black;
-}
-
-.tabs > div {
-    display: none;
-}
 
 /* --- */
 
