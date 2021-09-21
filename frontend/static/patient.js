@@ -104,7 +104,8 @@ export class MainPage extends gesso.Page {
             const id = parseInt($p("id"));
             const name = data.patients[id].name;
             const appointmentRequestCreateLink = `/appointment-request/create?patient=${id}`;
-            const appointmentRequests = Object.values(data.appointment_requests).filter(item => item.patient_id === id);
+            const appointmentRequests = Object.values(data.appointment_requests)
+                  .filter(item => item.patient_id === id && item.appointment_id === null);
             const appointments = Object.values(data.appointments).filter(item => item.patient_id === id);
             const bills = Object.values(data.bills).filter(item => item.patient_id === id);
             const doctors = Object.values(data.doctors);
