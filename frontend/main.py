@@ -117,9 +117,9 @@ async def post_appointment_request_create(request):
     data = await request.json()
 
     async with pool.connection() as conn:
-        await conn.execute("insert into appointment_requests (patient_id, date, date_is_approximate, time_of_day) "
-                           "values (%s, %s, %s, %s)",
-                           (data["patient"], data["date"], data["date_is_approximate"], data["time_of_day"]))
+        await conn.execute("insert into appointment_requests (patient_id, date, time) "
+                           "values (%s, %s, %s)",
+                           (data["patient"], data["date"], data["time"]))
 
     return CustomJsonResponse({"error": None})
 
@@ -128,9 +128,14 @@ async def post_appointment_create(request):
     data = await request.json()
 
     async with pool.connection() as conn:
-        await conn.execute("insert into appointments (patient_id, doctor_id, date, time) "
-                           "values (%s, %s, %s, %s)",
-                           (data["patient"], data["doctor"], data["date"], data["time"]))
+        curs = await conn.execute("insert into appointments (doctor_id, patient_id, date, time) "
+                                  "values (%s, %s, %s, %s) returning id",
+                                  (data["doctor"], data["patient"], data["date"], data["time"]))
+
+        appointment_id = (await curs.fetchone())[0]
+
+        await conn.execute("update appointment_requests set appointment_id = %s where id = %s",
+                           (appointment_id, data["request"]))
 
     return CustomJsonResponse({"error": None})
 

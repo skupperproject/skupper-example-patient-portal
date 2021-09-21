@@ -33,10 +33,7 @@ const html = `
   </div>
 
   <div data-tab="appointments">
-    <div class="fnaz">
-      <h1>Appointments</h1>
-      <a class="button" id="appointment-create-link">Create appointment</a>
-    </div>
+    <h1>Appointments</h1>
 
     <div id="appointment-table"></div>
   </div>
@@ -66,15 +63,14 @@ const tabs = new gesso.Tabs("tab");
 function createAppointmentLink(id) {
     const doctorId = $p("id");
     return gesso.createLink(null, `/appointment/create?doctor=${doctorId}&request=${id}`,
-                            {class: "button", text: "Create appointment"});
+                            {class: "action", text: "Create appointment"});
 }
 
 const appointmentRequestTable = new gesso.Table("appointment-request-table", [
     ["ID", "id"],
     ["Patient", "patient_id", (id, data) => data.patients[id].name],
     ["Date", "date"],
-    ["Date is approximate?", "date_is_approximate", gesso.formatBoolean],
-    ["Time of day", "time_of_day", capitalize],
+    ["Time", "time"],
     ["", "id", createAppointmentLink],
 ]);
 
@@ -111,12 +107,13 @@ export class MainPage extends gesso.Page {
             const id = parseInt($p("id"));
             const name = data.doctors[id].name;
             const appointmentCreateLink = `/appointment/create?doctor=${id}`;
-            const appointmentRequests = Object.values(data.appointment_requests);
-            const appointments = Object.values(data.appointments) .filter(item => item.doctor_id === id);
+            const appointmentRequests = Object.values(data.appointment_requests)
+                  .filter(item => item.appointment_id === null);
+            const appointments = Object.values(data.appointments)
+                  .filter(item => item.doctor_id === id);
             const patients = Object.values(data.patients);
 
             $("#doctor-name").textContent = name;
-            $("#appointment-create-link").setAttribute("href", appointmentCreateLink);
 
             appointmentRequestTable.update(appointmentRequests, data);
             appointmentTable.update(appointments, data);

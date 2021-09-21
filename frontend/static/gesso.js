@@ -191,6 +191,14 @@ export function replaceElement(oldElement, newElement) {
     oldElement.parentNode.replaceChild(newElement, oldElement);
 }
 
+export function formatDate(date) {
+    return date.toISOString().slice(0, 10);
+}
+
+export function formatTime(date) {
+    return date.toISOString().slice(11, 16);
+}
+
 export function formatDuration(millis, suffixes) {
     if (millis == null) {
         return "-";

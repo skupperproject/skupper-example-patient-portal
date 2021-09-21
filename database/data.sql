@@ -19,20 +19,20 @@ create table doctors (
     email               varchar
 );
 
+create table appointments (
+    id                  serial primary key,
+    doctor_id           integer not null references doctors,
+    patient_id          integer not null references patients,
+    date                date,
+    time                time
+);
+
 create table appointment_requests (
     id                  serial primary key,
     patient_id          integer not null references patients,
+    appointment_id      integer references appointments,
     date                date not null,
-    date_is_approximate boolean not null,
-    time_of_day         varchar not null
-);
-
-create table appointments (
-    id                  serial primary key,
-    patient_id          integer not null references patients,
-    doctor_id           integer not null references doctors,
-    date                date,
-    time                time
+    time                time not null
 );
 
 create table bills (
