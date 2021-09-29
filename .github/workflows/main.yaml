@@ -11,6 +11,6 @@ jobs:
           minikube version: 'v1.22.0'
           kubernetes version: 'v1.21.2'
           github token: ${{ secrets.GITHUB_TOKEN }}
-      - run: curl https://skupper.io/install.sh | sh
+      - run: curl -f https://skupper.io/install.sh | sh
       - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - run: ./plano test

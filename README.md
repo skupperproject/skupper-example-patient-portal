@@ -1,6 +1,6 @@
 # Patient Portal with PostgreSQL and Skupper
 
-[![main](https://github.com/skupperproject/skupper-example-patient-portal/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-patient-portal/actions/workflows/main.yaml)
+[![main](https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml)
 
 #### A simple database-backed web application that runs in the public cloud but keeps its data in a private database
 
@@ -32,7 +32,24 @@ across cloud providers, data centers, and edge sites.
 
 ## Overview
 
-XXX postgresql (for psql), podman
+This example is a simple database-backed web application that shows
+how you can use Skupper to access a database at a remote site
+without exposing it to the public internet.
+
+It contains three services:
+
+  * A PostgreSQL database running on a bare-metal or virtual
+    machine in a private data center.
+
+  * A payment-processing service running on Kubernetes in a private
+    data center.
+
+  * A web frontend service running on Kubernetes in the public
+    cloud.  It uses the PostgreSQL database and the
+    payment-processing service.
+
+This example uses two Kubernetes namespaces, "private" and "public",
+to represent the private Kubernetes cluster and the public cloud.
 
 ## Prerequisites
 
@@ -194,7 +211,7 @@ token.  Then, use `skupper link create` in the other to create a link.
 Console for _public_:
 
 ~~~ shell
-skupper token create ~/secret.yaml
+skupper token create --token-type cert ~/secret.yaml
 ~~~
 
 Console for _private_:
@@ -212,7 +229,7 @@ use `scp` or a similar tool to transfer the token.
 Console for _public_:
 
 ~~~ shell
-docker run --net host quay.io/ssorj/patient-portal-database
+docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
 ~~~
 
 ## Step 8: Expose the database
@@ -252,7 +269,11 @@ kubectl apply -f frontend
 
 ## Step 12: Test the application
 
+Console for _public_:
 
+~~~ shell
+sleep 86400
+~~~
 
 ## Cleaning up
 
@@ -263,8 +284,16 @@ Console for _public_:
 
 ~~~ shell
 skupper delete
+skupper gateway delete
 kubectl delete service/patient-portal-frontend
 kubectl delete deployment/patient-portal-frontend
+~~~
+
+Console for _private_:
+
+~~~ shell
+skupper delete
+kubectl delete deployment/patient-portal-payment-processor
 ~~~
 
 ## Next steps
