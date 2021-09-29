@@ -13,5 +13,3 @@ def run_(app):
 def push(app):
     build(app)
     run(f"podman push {image_tag}")
-
-# hypercorn main:star --certfile service.cert --keyfile service.key --debug
