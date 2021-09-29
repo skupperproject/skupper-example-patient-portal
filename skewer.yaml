@@ -8,33 +8,54 @@ contexts:
   public:
     kubeconfig: ~/.kube/config-public
     namespace: public
+  private:
+    kubeconfig: ~/.kube/config-private
+    namespace: private
 steps:
-  # - standard: configure_separate_console_sessions
-  # - standard: access_your_clusters
-  # - standard: set_up_your_namespaces
-  # - standard: install_skupper_in_your_namespaces
-  # - standard: check_the_status_of_your_namespaces
-  # - title: Link your namespaces
-  #   preamble: !string link_your_namespaces_preamble
-  #   commands:
-  #     west:
-  #       - run: skupper token create ~/west.token
-  #     east:
-  #       - run: skupper link create ~/west.token
-  #       - run: skupper link status --wait 30
-  #   postamble: !string link_your_namespaces_postamble
+  - standard: configure_separate_console_sessions
+  - standard: access_your_clusters
+  - standard: set_up_your_namespaces
+  - standard: install_skupper_in_your_namespaces
+  - standard: check_the_status_of_your_namespaces
+  - title: Link your namespaces
+    preamble: !string link_your_namespaces_preamble
+    commands:
+      public:
+        - run: skupper token create --token-type cert ~/secret.yaml
+      private:
+        - run: skupper link create ~/secret.yaml
+        - run: skupper link status --wait 30
+    postamble: !string link_your_namespaces_postamble
   - title: Deploy the database
+    commands:
+      public:
+        - run: docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
   - title: Expose the database
-  - title: Deploy the frontend service
+    commands:
+      public:
+        - run: skupper gateway expose database localhost 5432
+  - title: Deploy the payment processor
+    commands:
+      private:
+        - run: kubectl apply -f payment-processor
+  - title: Expose the payment processor
+    commands:
+      private:
+        - run: skupper expose deployment/payment-processor --protocol http --port 8080
+  - title: Deploy the frontend
     preamble: |
       Use `kubectl create deployment` to deploy the frontend service
       in `public`.
     commands:
       public:
-        - run: kubectl create deployment patient-portal-frontend --image quay.io/skupper/patient-portal-frontend
-          await: [deployment/patient-portal-frontend]
-  - title: Expose the frontend service
+        - run: kubectl apply -f frontend
+        # - run: kubectl create deployment patient-portal-frontend --image quay.io/skupper/patient-portal-frontend
+        #   await: [deployment/patient-portal-frontend]
+  # - title: Expose the frontend
   - title: Test the application
+    commands:
+      public:
+        - run: sleep 86400
 cleaning_up:
   preamble: !string cleaning_up_preamble
   commands:
