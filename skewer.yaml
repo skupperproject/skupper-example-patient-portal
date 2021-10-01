@@ -38,7 +38,7 @@ steps:
     preamble: !string link_your_namespaces_preamble
     commands:
       public:
-        - run: skupper token create --token-type cert ~/secret.yaml
+        - run: skupper token create ~/secret.yaml
       private:
         - run: skupper link create ~/secret.yaml
         - run: skupper link status --wait 30
