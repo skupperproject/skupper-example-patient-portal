@@ -66,13 +66,9 @@ steps:
     commands:
       public:
         - run: kubectl apply -f frontend
-        # - run: kubectl create deployment patient-portal-frontend --image quay.io/skupper/patient-portal-frontend
-        #   await: [deployment/patient-portal-frontend]
-  # - title: Expose the frontend
+          await: [deployment/patient-portal-frontend]
+  - title: Expose the frontend
   - title: Test the application
-    commands:
-      public:
-        - run: sleep 86400
 cleaning_up:
   preamble: !string cleaning_up_preamble
   commands:

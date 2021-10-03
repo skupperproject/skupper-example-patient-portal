@@ -13,4 +13,10 @@ jobs:
           github token: ${{ secrets.GITHUB_TOKEN }}
       - run: curl -f https://skupper.io/install.sh | sh
       - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - run: |
+          apt-get update
+          apt-get -qq install software-properties-common
+          add-apt-repository -y ppa:qpid/released
+          apt-get update
+          apt-get install qdrouterd
       - run: ./plano test
