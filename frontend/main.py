@@ -68,6 +68,13 @@ async def startup():
 
     asyncio.create_task(listen())
 
+    async def check():
+        while True:
+            await asyncio.sleep(60)
+            await pool.check()
+
+    asyncio.create_task(check())
+
 async def shutdown():
     await pool.close()
 
