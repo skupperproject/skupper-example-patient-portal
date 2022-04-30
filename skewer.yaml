@@ -50,6 +50,7 @@ steps:
   - title: Expose the database
     commands:
       public:
+        - run: sleep 86400
         - run: skupper gateway expose database localhost 5432
   - title: Deploy the payment processor
     commands:
@@ -66,7 +67,7 @@ steps:
     commands:
       public:
         - run: kubectl apply -f frontend
-          await: [deployment/patient-portal-frontend]
+          await: [deployment/frontend]
   - title: Expose the frontend
   - title: Test the application
 cleaning_up:
@@ -75,9 +76,9 @@ cleaning_up:
     public:
       - run: skupper delete
       - run: skupper gateway delete
-      - run: kubectl delete service/patient-portal-frontend
-      - run: kubectl delete deployment/patient-portal-frontend
+      - run: kubectl delete service/frontend
+      - run: kubectl delete deployment/frontend
     private:
       - run: skupper delete
-      - run: kubectl delete deployment/patient-portal-payment-processor
+      - run: kubectl delete deployment/payment-processor
 next_steps: !string next_steps
