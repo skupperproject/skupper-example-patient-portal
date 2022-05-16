@@ -137,10 +137,10 @@ The `skupper init` command installs the Skupper router and service
 controller in the current namespace.  Run the `skupper init` command
 in each namespace.
 
-[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
-
 **Note:** If you are using Minikube, [you need to start `minikube
 tunnel`][minikube-tunnel] before you install Skupper.
+
+[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
 Console for _west_:
 
@@ -151,14 +151,8 @@ skupper init
 Console for _east_:
 
 ~~~ shell
-skupper init --ingress none
+skupper init
 ~~~
-
-Here we are using `--ingress none` in one of the namespaces simply to
-make local development with Minikube easier.  (It's tricky to run two
-Minikube tunnels on one host.)  The `--ingress none` option is not
-required if your two namespaces are on different hosts or on public
-clusters.
 
 ## Step 5: Check the status of your namespaces
 
@@ -216,11 +210,13 @@ Console for _east_:
 
 ~~~ shell
 skupper link create ~/west.token
-skupper link status --wait 30
 ~~~
 
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
+
+You can use the `skupper link status` command to check if linking
+succeeded.
 
 ## Step 7: Deploy the frontend and backend services
 
@@ -302,7 +298,7 @@ Look up the external URL and use `curl` to send a request.
 Console for _west_:
 
 ~~~ shell
-curl $(kubectl get service hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
+curl $(kubectl get service/hello-world-frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')
 ~~~
 
 Sample output:
