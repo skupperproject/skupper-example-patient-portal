@@ -48,6 +48,8 @@ steps:
       public:
         - run: docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
         - run: skupper gateway expose database localhost 5432 --type docker
+        - run: kubectl get services
+          await: [service/database]
   - title: Deploy and expose the payment processor
     preamble: |
       In the private namespace, XXX.
@@ -65,7 +67,7 @@ steps:
         - run: skupper expose deployment/payment-processor --protocol http --port 8080
       public:
         - run: kubectl get services
-          await_external_ip: [service/frontend]
+          await: [service/payment-processor]
   - title: Deploy the frontend
     preamble: |
       In the public namespace, use the `kubectl apply` command with

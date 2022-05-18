@@ -226,6 +226,7 @@ Console for _public_:
 ~~~ shell
 docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
 skupper gateway expose database localhost 5432 --type docker
+kubectl get services
 ~~~
 
 ## Step 8: Deploy and expose the payment processor
