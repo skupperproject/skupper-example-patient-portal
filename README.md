@@ -26,7 +26,8 @@ across cloud providers, data centers, and edge sites.
 * [Step 9: Deploy the payment processor](#step-9-deploy-the-payment-processor)
 * [Step 10: Expose the payment processor](#step-10-expose-the-payment-processor)
 * [Step 11: Deploy the frontend](#step-11-deploy-the-frontend)
-* [Step 12: Test the application](#step-12-test-the-application)
+* [Step 12: Expose the frontend](#step-12-expose-the-frontend)
+* [Step 13: Test the application](#step-13-test-the-application)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
 
@@ -139,10 +140,10 @@ The `skupper init` command installs the Skupper router and service
 controller in the current namespace.  Run the `skupper init` command
 in each namespace.
 
-[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
-
 **Note:** If you are using Minikube, [you need to start `minikube
 tunnel`][minikube-tunnel] before you install Skupper.
+
+[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
 Console for _public_:
 
@@ -153,14 +154,8 @@ skupper init
 Console for _private_:
 
 ~~~ shell
-skupper init --ingress none
+skupper init
 ~~~
-
-Here we are using `--ingress none` in one of the namespaces simply to
-make local development with Minikube easier.  (It's tricky to run two
-Minikube tunnels on one host.)  The `--ingress none` option is not
-required if your two namespaces are on different hosts or on public
-clusters.
 
 ## Step 5: Check the status of your namespaces
 
@@ -211,7 +206,7 @@ token.  Then, use `skupper link create` in the other to create a link.
 Console for _public_:
 
 ~~~ shell
-skupper token create --token-type cert ~/secret.yaml
+skupper token create ~/secret.yaml
 ~~~
 
 Console for _private_:
@@ -223,6 +218,9 @@ skupper link status --wait 30
 
 If your console sessions are on different machines, you may need to
 use `scp` or a similar tool to transfer the token.
+
+You can use the `skupper link status` command to check if linking
+succeeded.
 
 ## Step 7: Deploy the database
 
@@ -267,13 +265,13 @@ Console for _public_:
 kubectl apply -f frontend
 ~~~
 
-## Step 12: Test the application
+## Step 12: Expose the frontend
 
-Console for _public_:
 
-~~~ shell
-sleep 86400
-~~~
+
+## Step 13: Test the application
+
+
 
 ## Cleaning up
 
@@ -283,17 +281,17 @@ following commands.
 Console for _public_:
 
 ~~~ shell
-skupper delete
 skupper gateway delete
-kubectl delete service/patient-portal-frontend
-kubectl delete deployment/patient-portal-frontend
+skupper delete
+kubectl delete service/frontend
+kubectl delete deployment/frontend
 ~~~
 
 Console for _private_:
 
 ~~~ shell
 skupper delete
-kubectl delete deployment/patient-portal-payment-processor
+kubectl delete deployment/payment-processor
 ~~~
 
 ## Next steps

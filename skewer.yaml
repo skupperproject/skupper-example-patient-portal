@@ -21,7 +21,7 @@ overview: |
   This example uses two Kubernetes namespaces, "private" and "public",
   to represent the private Kubernetes cluster and the public cloud.
 prerequisites: !string prerequisites
-contexts:
+sites:
   public:
     kubeconfig: ~/.kube/config-public
     namespace: public
@@ -50,7 +50,6 @@ steps:
   - title: Expose the database
     commands:
       public:
-        - run: sleep 86400
         - run: skupper gateway expose database localhost 5432
   - title: Deploy the payment processor
     commands:
@@ -74,8 +73,8 @@ cleaning_up:
   preamble: !string cleaning_up_preamble
   commands:
     public:
-      - run: skupper delete
       - run: skupper gateway delete
+      - run: skupper delete
       - run: kubectl delete service/frontend
       - run: kubectl delete deployment/frontend
     private:
