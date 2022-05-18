@@ -67,7 +67,7 @@ steps:
       public:
         - run: kubectl apply -f frontend
           await: [deployment/frontend]
-        - run: "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/')"
+        - run: "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/data')"
           apply: test
   - title: Expose the frontend
   - title: Test the application
