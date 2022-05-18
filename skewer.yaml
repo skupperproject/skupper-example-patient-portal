@@ -55,10 +55,13 @@ steps:
     preamble: |
       In the public namespace, use the `kubectl apply` command with
       the listed YAML files to install the application services.
+
+      XXX Split this
     commands:
-      public:
+      private:
         - run: kubectl apply -f payment-processor/kubernetes.yaml
           await: [deployment/payment-processor]
+      public:
         - run: kubectl apply -f frontend/kubernetes.yaml
           await_external_ip: [service/frontend]
   - title: Expose the payment processor
