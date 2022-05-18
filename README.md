@@ -23,11 +23,9 @@ across cloud providers, data centers, and edge sites.
 * [Step 6: Link your namespaces](#step-6-link-your-namespaces)
 * [Step 7: Deploy the database](#step-7-deploy-the-database)
 * [Step 8: Expose the database](#step-8-expose-the-database)
-* [Step 9: Deploy the payment processor](#step-9-deploy-the-payment-processor)
+* [Step 9: Deploy the application services](#step-9-deploy-the-application-services)
 * [Step 10: Expose the payment processor](#step-10-expose-the-payment-processor)
-* [Step 11: Deploy the frontend](#step-11-deploy-the-frontend)
-* [Step 12: Expose the frontend](#step-12-expose-the-frontend)
-* [Step 13: Test the application](#step-13-test-the-application)
+* [Step 11: Test the application](#step-11-test-the-application)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
 
@@ -235,15 +233,19 @@ docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
 Console for _public_:
 
 ~~~ shell
-skupper gateway expose database localhost 5432
+skupper gateway expose database localhost 5432 --type docker
 ~~~
 
-## Step 9: Deploy the payment processor
+## Step 9: Deploy the application services
 
-Console for _private_:
+In the public namespace, use the `kubectl apply` command with
+the listed YAML files to install the application services.
+
+Console for _public_:
 
 ~~~ shell
-kubectl apply -f payment-processor
+kubectl apply -f payment-processor/kubernetes.yaml
+kubectl apply -f frontend/kubernetes.yaml
 ~~~
 
 ## Step 10: Expose the payment processor
@@ -254,24 +256,29 @@ Console for _private_:
 skupper expose deployment/payment-processor --protocol http --port 8080
 ~~~
 
-## Step 11: Deploy the frontend
+## Step 11: Test the application
 
-Use `kubectl create deployment` to deploy the frontend service
-in `public`.
+In the public namespace, use `kubectl get service/frontend` to
+look up the external URL of the frontend service.  Then use
+`curl` or a similar tool to request the `/api/health` endpoint.
 
 Console for _public_:
 
 ~~~ shell
-kubectl apply -f frontend
+FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')
+curl $FRONTEND/api/health
 ~~~
 
-## Step 12: Expose the frontend
+Sample output:
 
+~~~
+$ curl $FRONTEND/api/health
+OK
+~~~
 
-
-## Step 13: Test the application
-
-
+If everything is in order, you can now access the application
+using your browser by navigating to the URL stored in
+`$FRONTEND`.
 
 ## Cleaning up
 

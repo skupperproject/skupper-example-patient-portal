@@ -119,6 +119,13 @@ async def get_data(request):
 
     return CustomJsonResponse(data)
 
+@star.route("/api/health")
+async def get_health(request):
+    async with pool.connection() as conn:
+        await conn.execute("select 1")
+
+    return Response("OK\n", 200)
+
 @star.route("/api/appointment-request/create", methods=["POST"])
 async def post_appointment_request_create(request):
     data = await request.json()

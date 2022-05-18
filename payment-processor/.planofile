@@ -5,7 +5,7 @@ def build(app):
     run("mvn package")
     run(f"podman build -t {image_tag} .")
 
-@command(name="run")
+@command
 def run_(app):
     build(app)
     run(f"podman run --net host {image_tag}")

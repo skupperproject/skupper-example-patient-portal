@@ -4,7 +4,7 @@ image_tag = "quay.io/ssorj/patient-portal-database"
 def build(app):
     run(f"podman build -t {image_tag} .")
 
-@command(name="run")
+@command
 def run_(app):
     build(app)
     run(f"podman run --net host {image_tag}")
