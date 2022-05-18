@@ -250,10 +250,23 @@ kubectl apply -f frontend/kubernetes.yaml
 
 ## Step 10: Expose the payment processor
 
+In the private namespace, use `skupper expose` to expose the
+payment processor.
+
+Then, in the public namespace, use `kubectl get services` to
+check that the `payment-processor` service appears after a
+moment.
+
 Console for _private_:
 
 ~~~ shell
 skupper expose deployment/payment-processor --protocol http --port 8080
+~~~
+
+Console for _public_:
+
+~~~ shell
+kubectl get services
 ~~~
 
 ## Step 11: Test the application
