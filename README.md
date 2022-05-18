@@ -21,11 +21,10 @@ across cloud providers, data centers, and edge sites.
 * [Step 4: Install Skupper in your namespaces](#step-4-install-skupper-in-your-namespaces)
 * [Step 5: Check the status of your namespaces](#step-5-check-the-status-of-your-namespaces)
 * [Step 6: Link your namespaces](#step-6-link-your-namespaces)
-* [Step 7: Deploy the database](#step-7-deploy-the-database)
-* [Step 8: Expose the database](#step-8-expose-the-database)
-* [Step 9: Deploy the application services](#step-9-deploy-the-application-services)
-* [Step 10: Expose the payment processor](#step-10-expose-the-payment-processor)
-* [Step 11: Test the application](#step-11-test-the-application)
+* [Step 7: Deploy and expose the database](#step-7-deploy-and-expose-the-database)
+* [Step 8: Deploy and expose the payment processor](#step-8-deploy-and-expose-the-payment-processor)
+* [Step 9: Deploy the frontend](#step-9-deploy-the-frontend)
+* [Step 10: Test the application](#step-10-test-the-application)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
 
@@ -204,13 +203,13 @@ token.  Then, use `skupper link create` in the other to create a link.
 Console for _public_:
 
 ~~~ shell
-skupper token create ~/secret.yaml
+skupper token create ~/secret.token
 ~~~
 
 Console for _private_:
 
 ~~~ shell
-skupper link create ~/secret.yaml
+skupper link create ~/secret.token
 skupper link status --wait 30
 ~~~
 
@@ -220,35 +219,18 @@ use `scp` or a similar tool to transfer the token.
 You can use the `skupper link status` command to check if linking
 succeeded.
 
-## Step 7: Deploy the database
+## Step 7: Deploy and expose the database
 
 Console for _public_:
 
 ~~~ shell
 docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
-~~~
-
-## Step 8: Expose the database
-
-Console for _public_:
-
-~~~ shell
 skupper gateway expose database localhost 5432 --type docker
 ~~~
 
-## Step 9: Deploy the application services
+## Step 8: Deploy and expose the payment processor
 
-In the public namespace, use the `kubectl apply` command with
-the listed YAML files to install the application services.
-
-Console for _public_:
-
-~~~ shell
-kubectl apply -f payment-processor/kubernetes.yaml
-kubectl apply -f frontend/kubernetes.yaml
-~~~
-
-## Step 10: Expose the payment processor
+In the private namespace, XXX.
 
 In the private namespace, use `skupper expose` to expose the
 payment processor.
@@ -260,6 +242,7 @@ moment.
 Console for _private_:
 
 ~~~ shell
+kubectl apply -f payment-processor/kubernetes.yaml
 skupper expose deployment/payment-processor --protocol http --port 8080
 ~~~
 
@@ -269,7 +252,18 @@ Console for _public_:
 kubectl get services
 ~~~
 
-## Step 11: Test the application
+## Step 9: Deploy the frontend
+
+In the public namespace, use the `kubectl apply` command with
+XXX.
+
+Console for _public_:
+
+~~~ shell
+kubectl apply -f frontend/kubernetes.yaml
+~~~
+
+## Step 10: Test the application
 
 In the public namespace, use `kubectl get service/frontend` to
 look up the external URL of the frontend service.  Then use

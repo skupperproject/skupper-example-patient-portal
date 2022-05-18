@@ -38,34 +38,20 @@ steps:
     preamble: !string link_your_namespaces_preamble
     commands:
       public:
-        - run: skupper token create ~/secret.yaml
+        - run: skupper token create ~/secret.token
       private:
-        - run: skupper link create ~/secret.yaml
+        - run: skupper link create ~/secret.token
         - run: skupper link status --wait 30
     postamble: !string link_your_namespaces_postamble
-  - title: Deploy the database
+  - title: Deploy and expose the database
     commands:
       public:
         - run: docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
-  - title: Expose the database
-    commands:
-      public:
         - run: skupper gateway expose database localhost 5432 --type docker
-  - title: Deploy the application services
+  - title: Deploy and expose the payment processor
     preamble: |
-      In the public namespace, use the `kubectl apply` command with
-      the listed YAML files to install the application services.
+      In the private namespace, XXX.
 
-      XXX Split this
-    commands:
-      private:
-        - run: kubectl apply -f payment-processor/kubernetes.yaml
-          await: [deployment/payment-processor]
-      public:
-        - run: kubectl apply -f frontend/kubernetes.yaml
-          await_external_ip: [service/frontend]
-  - title: Expose the payment processor
-    preamble: |
       In the private namespace, use `skupper expose` to expose the
       payment processor.
 
@@ -74,10 +60,20 @@ steps:
       moment.
     commands:
       private:
+        - run: kubectl apply -f payment-processor/kubernetes.yaml
+          await: [deployment/payment-processor]
         - run: skupper expose deployment/payment-processor --protocol http --port 8080
       public:
         - run: kubectl get services
-          await: [service/payment-processor]
+          await_external_ip: [service/frontend]
+  - title: Deploy the frontend
+    preamble: |
+      In the public namespace, use the `kubectl apply` command with
+      XXX.
+    commands:
+      public:
+        - run: kubectl apply -f frontend/kubernetes.yaml
+          await_external_ip: [service/frontend]
   - title: Test the application
     preamble: |
       In the public namespace, use `kubectl get service/frontend` to
