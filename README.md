@@ -210,7 +210,6 @@ Console for _private_:
 
 ~~~ shell
 skupper link create ~/secret.token
-skupper link status --wait 30
 ~~~
 
 If your console sessions are on different machines, you may need to
@@ -221,22 +220,35 @@ succeeded.
 
 ## Step 7: Deploy and expose the database
 
+Use `docker` to run the database service on your machine.  In
+the public namespace, use the `skupper gateway expose` command
+to expose the database on the Skupper network.
+
+Use `kubectl get service/database` to ensure the database
+service is available.
+
 Console for _public_:
 
 ~~~ shell
 docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
 skupper gateway expose database localhost 5432 --type docker
-kubectl get services
+kubectl get service/database
+~~~
+
+Sample output:
+
+~~~
+NAME       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+database   ClusterIP   10.104.77.32   <none>        5432/TCP   15s
 ~~~
 
 ## Step 8: Deploy and expose the payment processor
 
-In the private namespace, XXX.
+In the private namespace, use the `kubectl apply` command to
+deploy the payment processor service.  Use the `skupper expose`
+command to expose the service on the Skupper network.
 
-In the private namespace, use `skupper expose` to expose the
-payment processor.
-
-Then, in the public namespace, use `kubectl get services` to
+In the public namespace, use `kubectl get service/payment-processor` to
 check that the `payment-processor` service appears after a
 moment.
 
@@ -244,19 +256,27 @@ Console for _private_:
 
 ~~~ shell
 kubectl apply -f payment-processor/kubernetes.yaml
-skupper expose deployment/payment-processor --protocol http --port 8080
+skupper expose deployment/payment-processor --port 8080
 ~~~
 
 Console for _public_:
 
 ~~~ shell
-kubectl get services
+kubectl get service/payment-processor
+~~~
+
+Sample output:
+
+~~~
+NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+payment-processor   ClusterIP   10.103.227.109   <none>        8080/TCP   1s
 ~~~
 
 ## Step 9: Deploy the frontend
 
-In the public namespace, use the `kubectl apply` command with
-XXX.
+In the public namespace, use the `kubectl apply` command to
+deploy the frontend service.  This also sets up an external load
+balancer for the frontend.
 
 Console for _public_:
 
@@ -266,27 +286,34 @@ kubectl apply -f frontend/kubernetes.yaml
 
 ## Step 10: Test the application
 
-In the public namespace, use `kubectl get service/frontend` to
-look up the external URL of the frontend service.  Then use
-`curl` or a similar tool to request the `/api/health` endpoint.
+Now we're ready to try it out.  Use `kubectl get
+service/frontend` to look up the external IP of the frontend
+service.  Then use `curl` or a similar tool to request the
+`/api/health` endpoint at that address.
+
+**Note:** The `<external-ip>` field in the following commands is
+a placeholder.  The actual value is an IP address.
 
 Console for _public_:
 
 ~~~ shell
-FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')
-curl $FRONTEND/api/health
+kubectl get service/frontend
+curl http://<external-ip>:8080/api/health
 ~~~
 
 Sample output:
 
 ~~~
-$ curl $FRONTEND/api/health
+$ kubectl get service/frontend
+NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
+frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
+
+$ curl http://<external-ip>:8080/api/health
 OK
 ~~~
 
-If everything is in order, you can now access the application
-using your browser by navigating to the URL stored in
-`$FRONTEND`.
+If everything is in order, you can now access the web interface
+by navigating to `http://<external-ip>:8080/` in your browser.
 
 ## Cleaning up
 
