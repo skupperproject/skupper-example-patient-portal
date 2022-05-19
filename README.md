@@ -264,10 +264,9 @@ Check the status of the link using 'skupper link status'.
 ~~~
 
 If your console sessions are on different machines, you may need to
-use `sftp` or a similar tool to transfer the token securely.
-
-You can use the `skupper link status` command to check if linking
-succeeded.
+use `sftp` or a similar tool to transfer the token securely.  By
+default, tokens expire after a single use or 15 minutes after
+creation.
 
 ## Step 7: Deploy and expose the database
 
@@ -289,6 +288,9 @@ kubectl get service/database
 Sample output:
 
 ~~~ console
+$ skupper gateway expose database localhost 5432 --type docker
+2022/05/19 16:37:00 CREATE io.skupper.router.tcpConnector fancypants-jross-egress-database:5432 map[address:database:5432 host:localhost name:fancypants-jross-egress-database:5432 port:5432 siteId:0e7b70cf-1931-4c93-9614-0ecb3d0d6522]
+
 $ kubectl get service/database
 NAME       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 database   ClusterIP   10.104.77.32   <none>        5432/TCP   15s
@@ -309,6 +311,16 @@ moment.
 ~~~ shell
 kubectl apply -f payment-processor/kubernetes.yaml
 skupper expose deployment/payment-processor --port 8080
+~~~
+
+Sample output:
+
+~~~ console
+$ kubectl apply -f payment-processor/kubernetes.yaml
+deployment.apps/payment-processor created
+
+$ skupper expose deployment/payment-processor --port 8080
+deployment payment-processor exposed as payment-processor
 ~~~
 
 **Console for _public_:**
@@ -335,6 +347,14 @@ balancer for the frontend.
 
 ~~~ shell
 kubectl apply -f frontend/kubernetes.yaml
+~~~
+
+Sample output:
+
+~~~ console
+$ kubectl apply -f frontend/kubernetes.yaml
+deployment.apps/frontend created
+service/frontend created
 ~~~
 
 ## Step 10: Test the application

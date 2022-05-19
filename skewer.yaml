@@ -47,7 +47,8 @@ steps:
       public:
         - run: docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
         - run: skupper gateway expose database localhost 5432 --type docker
-        - await: [service/database]
+          output: 2022/05/19 16:37:00 CREATE io.skupper.router.tcpConnector fancypants-jross-egress-database:5432 map[address:database:5432 host:localhost name:fancypants-jross-egress-database:5432 port:5432 siteId:0e7b70cf-1931-4c93-9614-0ecb3d0d6522]
+        - await: service/database
         - run: kubectl get service/database
           output: |
             NAME       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
@@ -64,10 +65,12 @@ steps:
     commands:
       private:
         - run: kubectl apply -f payment-processor/kubernetes.yaml
-        - await: [deployment/payment-processor]
+          output: deployment.apps/payment-processor created
+        - await: deployment/payment-processor
         - run: skupper expose deployment/payment-processor --port 8080
+          output: deployment payment-processor exposed as payment-processor
       public:
-        - await: [service/payment-processor]
+        - await: service/payment-processor
         - run: kubectl get service/payment-processor
           output: |
             NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
@@ -80,6 +83,9 @@ steps:
     commands:
       public:
         - run: kubectl apply -f frontend/kubernetes.yaml
+          output: |
+            deployment.apps/frontend created
+            service/frontend created
         - await: [deployment/frontend, service/frontend]
   - standard: test_the_application
 cleaning_up:
