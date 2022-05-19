@@ -81,7 +81,7 @@ steps:
           output: |
             NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
             payment-processor   ClusterIP   10.103.227.109   <none>        8080/TCP   1s
-  - title: Deploy the frontend
+  - title: Deploy and expose the frontend
     preamble: |
       In the public namespace, use the `kubectl apply` command to
       deploy the frontend service.  This also sets up an external load
