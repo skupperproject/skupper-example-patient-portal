@@ -37,9 +37,9 @@ steps:
   - standard: link_your_namespaces
   - title: Deploy and expose the database
     preamble: |
-      Use `docker` to run the database service on your machine.  In
-      the public namespace, use the `skupper gateway expose` command
-      to expose the database on the Skupper network.
+      Use `docker` to run the database service on your local machine.
+      In the public namespace, use the `skupper gateway expose`
+      command to expose the database on the Skupper network.
 
       Use `kubectl get service/database` to ensure the database
       service is available.
@@ -47,7 +47,7 @@ steps:
       public:
         - run: docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
         - run: skupper gateway expose database localhost 5432 --type docker
-          await: [service/database]
+        - await: [service/database]
         - run: kubectl get service/database
           output: |
             NAME       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
@@ -64,7 +64,7 @@ steps:
     commands:
       private:
         - run: kubectl apply -f payment-processor/kubernetes.yaml
-          await: [deployment/payment-processor]
+        - await: [deployment/payment-processor]
         - run: skupper expose deployment/payment-processor --port 8080
       public:
         - await: [service/payment-processor]
@@ -80,7 +80,7 @@ steps:
     commands:
       public:
         - run: kubectl apply -f frontend/kubernetes.yaml
-          await: [deployment/frontend, service/frontend]
+        - await: [deployment/frontend, service/frontend]
   - standard: test_the_application
 cleaning_up:
   preamble: !string cleaning_up_preamble

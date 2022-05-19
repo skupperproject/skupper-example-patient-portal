@@ -84,13 +84,13 @@ Start a console session for each of your namespaces.  Set the
 `KUBECONFIG` environment variable to a different path in each
 session.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-public
 ~~~
 
-Console for _private_:
+**Console for _private_:**
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-private
@@ -117,18 +117,38 @@ Use `kubectl create namespace` to create the namespaces you wish to
 use (or use existing namespaces).  Use `kubectl config set-context` to
 set the current namespace for each session.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 kubectl create namespace public
 kubectl config set-context --current --namespace public
 ~~~
 
-Console for _private_:
+Sample output:
+
+~~~ console
+$ kubectl create namespace public
+namespace/public created
+
+$ kubectl config set-context --current --namespace public
+Context "minikube" modified.
+~~~
+
+**Console for _private_:**
 
 ~~~ shell
 kubectl create namespace private
 kubectl config set-context --current --namespace private
+~~~
+
+Sample output:
+
+~~~ console
+$ kubectl create namespace private
+namespace/private created
+
+$ kubectl config set-context --current --namespace private
+Context "minikube" modified.
 ~~~
 
 ## Step 4: Install Skupper in your namespaces
@@ -142,16 +162,32 @@ tunnel`][minikube-tunnel] before you install Skupper.
 
 [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 skupper init
 ~~~
 
-Console for _private_:
+Sample output:
+
+~~~ console
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Skupper is now installed in namespace 'public'.  Use 'skupper status' to get more information.
+~~~
+
+**Console for _private_:**
 
 ~~~ shell
 skupper init
+~~~
+
+Sample output:
+
+~~~ console
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Skupper is now installed in namespace 'private'.  Use 'skupper status' to get more information.
 ~~~
 
 ## Step 5: Check the status of your namespaces
@@ -159,13 +195,13 @@ skupper init
 Use `skupper status` in each console to check that Skupper is
 installed.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 skupper status
 ~~~
 
-Console for _private_:
+**Console for _private_:**
 
 ~~~ shell
 skupper status
@@ -200,16 +236,31 @@ have access to it.
 First, use `skupper token create` in one namespace to generate the
 token.  Then, use `skupper link create` in the other to create a link.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 skupper token create ~/secret.token
 ~~~
 
-Console for _private_:
+Sample output:
+
+~~~ console
+$ skupper token create ~/secret.token
+Token written to ~/secret.token
+~~~
+
+**Console for _private_:**
 
 ~~~ shell
 skupper link create ~/secret.token
+~~~
+
+Sample output:
+
+~~~ console
+$ skupper link create ~/secret.token
+Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
+Check the status of the link using 'skupper link status'.
 ~~~
 
 If your console sessions are on different machines, you may need to
@@ -220,14 +271,14 @@ succeeded.
 
 ## Step 7: Deploy and expose the database
 
-Use `docker` to run the database service on your machine.  In
-the public namespace, use the `skupper gateway expose` command
-to expose the database on the Skupper network.
+Use `docker` to run the database service on your local machine.
+In the public namespace, use the `skupper gateway expose`
+command to expose the database on the Skupper network.
 
 Use `kubectl get service/database` to ensure the database
 service is available.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
@@ -237,7 +288,7 @@ kubectl get service/database
 
 Sample output:
 
-~~~
+~~~ console
 $ kubectl get service/database
 NAME       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 database   ClusterIP   10.104.77.32   <none>        5432/TCP   15s
@@ -253,14 +304,14 @@ In the public namespace, use `kubectl get service/payment-processor` to
 check that the `payment-processor` service appears after a
 moment.
 
-Console for _private_:
+**Console for _private_:**
 
 ~~~ shell
 kubectl apply -f payment-processor/kubernetes.yaml
 skupper expose deployment/payment-processor --port 8080
 ~~~
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 kubectl get service/payment-processor
@@ -268,7 +319,7 @@ kubectl get service/payment-processor
 
 Sample output:
 
-~~~
+~~~ console
 $ kubectl get service/payment-processor
 NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 payment-processor   ClusterIP   10.103.227.109   <none>        8080/TCP   1s
@@ -280,7 +331,7 @@ In the public namespace, use the `kubectl apply` command to
 deploy the frontend service.  This also sets up an external load
 balancer for the frontend.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 kubectl apply -f frontend/kubernetes.yaml
@@ -295,7 +346,7 @@ similar tool to request the `/api/health` endpoint at that address.
 **Note:** The `<external-ip>` field in the following commands is a
 placeholder.  The actual value is an IP address.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 kubectl get service/frontend
@@ -304,7 +355,7 @@ curl http://<external-ip>:8080/api/health
 
 Sample output:
 
-~~~
+~~~ console
 $ kubectl get service/frontend
 NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
 frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
@@ -321,7 +372,7 @@ navigating to `http://<external-ip>:8080/` in your browser.
 To remove Skupper and the other resources from this exercise, use the
 following commands.
 
-Console for _public_:
+**Console for _public_:**
 
 ~~~ shell
 skupper gateway delete
@@ -330,7 +381,7 @@ kubectl delete service/frontend
 kubectl delete deployment/frontend
 ~~~
 
-Console for _private_:
+**Console for _private_:**
 
 ~~~ shell
 skupper delete
