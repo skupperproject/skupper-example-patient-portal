@@ -1,4 +1,4 @@
-title: Patient Portal with PostgreSQL and Skupper
+title: Patient Portal
 subtitle: A simple database-backed web application that runs in the public cloud but keeps its data in a private database
 github_actions_url: https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml
 overview: |
@@ -34,14 +34,7 @@ steps:
   - standard: set_up_your_namespaces
   - standard: install_skupper_in_your_namespaces
   - standard: check_the_status_of_your_namespaces
-  - title: Link your namespaces
-    preamble: !string link_your_namespaces_preamble
-    commands:
-      public:
-        - run: skupper token create ~/secret.token
-      private:
-        - run: skupper link create ~/secret.token
-    postamble: !string link_your_namespaces_postamble
+  - standard: link_your_namespaces
   - title: Deploy and expose the database
     preamble: |
       Use `docker` to run the database service on your machine.  In
@@ -74,9 +67,7 @@ steps:
           await: [deployment/payment-processor]
         - run: skupper expose deployment/payment-processor --port 8080
       public:
-        - run: echo
-          apply: test
-          await: [service/payment-processor]
+        - await: [service/payment-processor]
         - run: kubectl get service/payment-processor
           output: |
             NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
@@ -89,32 +80,8 @@ steps:
     commands:
       public:
         - run: kubectl apply -f frontend/kubernetes.yaml
-          await_external_ip: [service/frontend]
-  - title: Test the application
-    preamble: |
-      Now we're ready to try it out.  Use `kubectl get
-      service/frontend` to look up the external IP of the frontend
-      service.  Then use `curl` or a similar tool to request the
-      `/api/health` endpoint at that address.
-
-      **Note:** The `<external-ip>` field in the following commands is
-      a placeholder.  The actual value is an IP address.
-    commands:
-      public:
-        - run: kubectl get service/frontend
-          apply: readme
-          output: |
-            NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-            frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-        - run: "curl http://<external-ip>:8080/api/health"
-          apply: readme
-          output: |
-            OK
-        - run: "curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')"
-          apply: test
-    postamble: |
-      If everything is in order, you can now access the web interface
-      by navigating to `http://<external-ip>:8080/` in your browser.
+          await: [deployment/frontend, service/frontend]
+  - standard: test_the_application
 cleaning_up:
   preamble: !string cleaning_up_preamble
   commands:

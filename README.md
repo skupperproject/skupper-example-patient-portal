@@ -1,4 +1,4 @@
-# Patient Portal with PostgreSQL and Skupper
+# Patient Portal
 
 [![main](https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml)
 
@@ -23,7 +23,7 @@ across cloud providers, data centers, and edge sites.
 * [Step 6: Link your namespaces](#step-6-link-your-namespaces)
 * [Step 7: Deploy and expose the database](#step-7-deploy-and-expose-the-database)
 * [Step 8: Deploy and expose the payment processor](#step-8-deploy-and-expose-the-payment-processor)
-* [Step 9: Deploy the frontend](#step-9-deploy-the-frontend)
+* [Step 9: Deploy and expose the frontend](#step-9-deploy-and-expose-the-frontend)
 * [Step 10: Test the application](#step-10-test-the-application)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
@@ -213,7 +213,7 @@ skupper link create ~/secret.token
 ~~~
 
 If your console sessions are on different machines, you may need to
-use `scp` or a similar tool to transfer the token.
+use `sftp` or a similar tool to transfer the token securely.
 
 You can use the `skupper link status` command to check if linking
 succeeded.
@@ -238,6 +238,7 @@ kubectl get service/database
 Sample output:
 
 ~~~
+$ kubectl get service/database
 NAME       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 database   ClusterIP   10.104.77.32   <none>        5432/TCP   15s
 ~~~
@@ -268,11 +269,12 @@ kubectl get service/payment-processor
 Sample output:
 
 ~~~
+$ kubectl get service/payment-processor
 NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 payment-processor   ClusterIP   10.103.227.109   <none>        8080/TCP   1s
 ~~~
 
-## Step 9: Deploy the frontend
+## Step 9: Deploy and expose the frontend
 
 In the public namespace, use the `kubectl apply` command to
 deploy the frontend service.  This also sets up an external load
@@ -286,13 +288,12 @@ kubectl apply -f frontend/kubernetes.yaml
 
 ## Step 10: Test the application
 
-Now we're ready to try it out.  Use `kubectl get
-service/frontend` to look up the external IP of the frontend
-service.  Then use `curl` or a similar tool to request the
-`/api/health` endpoint at that address.
+Now we're ready to try it out.  Use `kubectl get service/frontend` to
+look up the external IP of the frontend service.  Then use `curl` or a
+similar tool to request the `/api/health` endpoint at that address.
 
-**Note:** The `<external-ip>` field in the following commands is
-a placeholder.  The actual value is an IP address.
+**Note:** The `<external-ip>` field in the following commands is a
+placeholder.  The actual value is an IP address.
 
 Console for _public_:
 
@@ -312,8 +313,8 @@ $ curl http://<external-ip>:8080/api/health
 OK
 ~~~
 
-If everything is in order, you can now access the web interface
-by navigating to `http://<external-ip>:8080/` in your browser.
+If everything is in order, you can now access the web interface by
+navigating to `http://<external-ip>:8080/` in your browser.
 
 ## Cleaning up
 
