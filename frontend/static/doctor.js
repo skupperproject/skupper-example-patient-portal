@@ -1,4 +1,4 @@
-import * as gesso from "./gesso.js";
+import * as gesso from "./gesso/gesso.js";
 import * as main from "./main.js";
 
 const html = `
@@ -68,7 +68,7 @@ function createAppointmentLink(id) {
 
 const appointmentRequestTable = new gesso.Table("appointment-request-table", [
     ["ID", "id"],
-    ["Patient", "patient_id", (id, data) => data.patients[id].name],
+    ["Patient", "patient_id", (id, item, data) => data.patients[id].name],
     ["Date", "date"],
     ["Time", "time"],
     ["", "id", createAppointmentLink],
@@ -76,7 +76,7 @@ const appointmentRequestTable = new gesso.Table("appointment-request-table", [
 
 const appointmentTable = new gesso.Table("appointment-table", [
     ["ID", "id"],
-    ["Patient", "patient_id", (id, data) => data.patients[id].name],
+    ["Patient", "patient_id", (id, item, data) => data.patients[id].name],
     ["Date", "date"],
     ["Time", "time"],
 ]);

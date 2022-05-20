@@ -259,21 +259,33 @@ export function getJson(url, handler) {
         headers: {"Content-Type": "application/json"},
     })
         .then(response => response.json())
-        .then(data => handler(data));
-
-    // XXX errors
+        .then(responseData => {
+            if (handler) {
+                handler(responseData);
+            }
+        })
+        .catch(error => {
+            console.log(error);
+        });
 }
 
-export function postJson(url, data) {
+export function postJson(url, requestData, handler) {
     console.log("Posting data to", url);
 
     fetch(url, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data),
-    }).then(response => response.json());
-
-    // XXX errors
+        body: JSON.stringify(requestData),
+    })
+        .then(response => response.json())
+        .then(responseData => {
+            if (handler) {
+                handler(responseData)
+            }
+        })
+        .catch(error => {
+            console.log(error);
+        });
 }
 
 export class Page {
@@ -287,6 +299,11 @@ export class Page {
         this.body = doc.activeElement;
 
         this.router.routes[this.path] = this;
+    }
+
+    process() {
+        this.render();
+        this.update();
     }
 
     render() {
@@ -344,11 +361,12 @@ export class Router {
 
     route(path) {
         this.page = this.routes[path];
-        this.page.render();
-        this.page.update();
+        this.page.process();
     }
 
     navigate(url) {
+        console.log(`Navigating to ${url}`);
+
         if (url.href === window.location.href) {
             return;
         }
@@ -358,6 +376,9 @@ export class Router {
     }
 }
 
+// One column: [title string, data key, optional rendering function]
+// Rendering function: render(value, item, context) => value
+// Context is whatever the user chooses to pass into update()
 export class Table {
     constructor(id, columns) {
         this.id = id;
@@ -380,7 +401,7 @@ export class Table {
                 let value = item[column[1]];
 
                 if (column.length === 3) {
-                    value = column[2](value, context);
+                    value = column[2](value, item, context);
                 }
 
                 row.push(value);

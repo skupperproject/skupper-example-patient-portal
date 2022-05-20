@@ -28,7 +28,7 @@ from psycopg_pool import AsyncConnectionPool
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
 from starlette.background import BackgroundTask
-from starlette.responses import Response, FileResponse, JSONResponse, RedirectResponse
+from starlette.responses import Response, FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
 
 process_id = f"frontend-{uuid.uuid4().hex[:8]}"
@@ -36,6 +36,10 @@ process_id = f"frontend-{uuid.uuid4().hex[:8]}"
 database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
 database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
 database_url = f"postgresql://patient_portal:secret@{database_host}:{database_port}/patient_portal"
+
+payment_processor_host = os.environ.get("PAYMENT_PROCESSOR_SERVICE_HOST", "localhost")
+payment_processor_port = os.environ.get("PAYMENT_PROCESSOR_SERVICE_PORT", "8081")
+payment_processor_url = f"http://{payment_processor_host}:{payment_processor_port}"
 
 pool = None
 change_event = None
@@ -158,7 +162,7 @@ async def post_bill_pay(request):
     data = await request.json()
 
     async with AsyncClient() as client:
-        response = await client.get("http://payment-processor:8080/api/pay")
+        response = await client.get(f"{payment_processor_url}/api/pay")
         print("Payment processor response:", response, response.text)
 
     async with pool.connection() as conn:

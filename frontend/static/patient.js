@@ -1,4 +1,4 @@
-import * as gesso from "./gesso.js";
+import * as gesso from "./gesso/gesso.js";
 import * as main from "./main.js";
 
 const html = `
@@ -66,7 +66,7 @@ const tabs = new gesso.Tabs("tab");
 
 const appointmentTable = new gesso.Table("appointment-table", [
     ["ID", "id"],
-    ["Doctor", "doctor_id", (id, data) => data.doctors[id].name],
+    ["Doctor", "doctor_id", (id, item, data) => data.doctors[id].name],
     ["Date", "date"],
     ["Time", "time"],
 ]);

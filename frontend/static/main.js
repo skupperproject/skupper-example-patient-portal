@@ -1,8 +1,9 @@
+import * as gesso from "./gesso/gesso.js";
+
 import * as appointment from "./appointment.js";
 import * as appointmentRequest from "./appointment-request.js";
 import * as bill from "./bill.js";
 import * as doctor from "./doctor.js";
-import * as gesso from "./gesso.js";
 import * as login from "./login.js";
 import * as patient from "./patient.js";
 

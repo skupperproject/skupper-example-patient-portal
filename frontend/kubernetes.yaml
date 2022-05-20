@@ -22,6 +22,10 @@ spec:
               value: database
             - name: DATABASE_SERVICE_PORT
               value: "5432"
+            - name: PAYMENT_PROCESSOR_SERVICE_HOST
+              value: payment-processor
+            - name: PAYMENT_PROCESSOR_SERVICE_PORT
+              value: "8080"
           ports:
             - containerPort: 8080
 ---

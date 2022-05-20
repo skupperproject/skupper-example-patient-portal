@@ -1,4 +1,4 @@
-FROM postgres
+FROM docker.io/library/postgres
 
 ENV POSTGRES_USER=patient_portal
 ENV POSTGRES_PASSWORD=secret
