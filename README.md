@@ -1,6 +1,6 @@
 # Patient Portal
 
-[![main](https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml)
+[![main](https://github.com/skupperproject/skupper-example-patient-portal/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-patient-portal/actions/workflows/main.yaml)
 
 #### A simple database-backed web application that runs in the public cloud but keeps its data in a private database
 
@@ -280,7 +280,7 @@ service is available.
 **Console for _public_:**
 
 ~~~ shell
-docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
+docker run --detach --rm -p 5432:5432 quay.io/skupper/patient-portal-database
 skupper gateway expose database localhost 5432 --type docker
 kubectl get service/database
 ~~~

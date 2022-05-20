@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: quay.io/ssorj/patient-portal-frontend
+          image: quay.io/skupper/patient-portal-frontend
           env:
             - name: DATABASE_SERVICE_HOST
               value: database

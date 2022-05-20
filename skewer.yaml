@@ -1,6 +1,6 @@
 title: Patient Portal
 subtitle: A simple database-backed web application that runs in the public cloud but keeps its data in a private database
-github_actions_url: https://github.com/ssorj/skupper-example-patient-portal/actions/workflows/main.yaml
+github_actions_url: https://github.com/skupperproject/skupper-example-patient-portal/actions/workflows/main.yaml
 overview: |
   This example is a simple database-backed web application that shows
   how you can use Skupper to access a database at a remote site
@@ -45,7 +45,7 @@ steps:
       service is available.
     commands:
       public:
-        - run: docker run --detach --rm -p 5432:5432 quay.io/ssorj/patient-portal-database
+        - run: docker run --detach --rm -p 5432:5432 quay.io/skupper/patient-portal-database
         - run: skupper gateway expose database localhost 5432 --type docker
           output: 2022/05/19 16:37:00 CREATE io.skupper.router.tcpConnector fancypants-jross-egress-database:5432 map[address:database:5432 host:localhost name:fancypants-jross-egress-database:5432 port:5432 siteId:0e7b70cf-1931-4c93-9614-0ecb3d0d6522]
         - await: service/database

@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: payment-processor
-          image: quay.io/ssorj/patient-portal-payment-processor
+          image: quay.io/skupper/patient-portal-payment-processor
           ports:
             - containerPort: 8080

@@ -1,4 +1,4 @@
-image_tag = "quay.io/ssorj/patient-portal-database"
+image_tag = "quay.io/skupper/patient-portal-database"
 
 @command
 def build(app):
