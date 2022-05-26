@@ -20,7 +20,6 @@ overview: |
 
   This example uses two Kubernetes namespaces, "private" and "public",
   to represent the private Kubernetes cluster and the public cloud.
-prerequisites: !string prerequisites
 sites:
   public:
     kubeconfig: ~/.kube/config-public
@@ -88,15 +87,13 @@ steps:
             service/frontend created
         - await: [deployment/frontend, service/frontend]
   - standard: test_the_application
-cleaning_up:
-  preamble: !string cleaning_up_preamble
-  commands:
-    public:
-      - run: skupper gateway delete
-      - run: skupper delete
-      - run: kubectl delete service/frontend
-      - run: kubectl delete deployment/frontend
-    private:
-      - run: skupper delete
-      - run: kubectl delete deployment/payment-processor
-next_steps: !string next_steps
+  - standard: cleaning_up
+    commands:
+      public:
+        - run: skupper gateway delete
+        - run: skupper delete
+        - run: kubectl delete service/frontend
+        - run: kubectl delete deployment/frontend
+      private:
+        - run: skupper delete
+        - run: kubectl delete deployment/payment-processor
