@@ -4,7 +4,6 @@
 
 #### A simple database-backed web application that runs in the public cloud but keeps its data in a private database
 
-
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
 across cloud providers, data centers, and edge sites.
@@ -12,22 +11,23 @@ across cloud providers, data centers, and edge sites.
 [website]: https://skupper.io/
 [examples]: https://skupper.io/examples/index.html
 
-
 #### Contents
 
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
-* [Step 1: Configure separate console sessions](#step-1-configure-separate-console-sessions)
-* [Step 2: Access your clusters](#step-2-access-your-clusters)
-* [Step 3: Set up your namespaces](#step-3-set-up-your-namespaces)
-* [Step 4: Install Skupper in your namespaces](#step-4-install-skupper-in-your-namespaces)
-* [Step 5: Check the status of your namespaces](#step-5-check-the-status-of-your-namespaces)
-* [Step 6: Link your namespaces](#step-6-link-your-namespaces)
-* [Step 7: Deploy and expose the database](#step-7-deploy-and-expose-the-database)
-* [Step 8: Deploy and expose the payment processor](#step-8-deploy-and-expose-the-payment-processor)
-* [Step 9: Deploy and expose the frontend](#step-9-deploy-and-expose-the-frontend)
-* [Step 10: Test the application](#step-10-test-the-application)
+* [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
+* [Step 2: Configure separate console sessions](#step-2-configure-separate-console-sessions)
+* [Step 3: Access your clusters](#step-3-access-your-clusters)
+* [Step 4: Set up your namespaces](#step-4-set-up-your-namespaces)
+* [Step 5: Install Skupper in your namespaces](#step-5-install-skupper-in-your-namespaces)
+* [Step 6: Check the status of your namespaces](#step-6-check-the-status-of-your-namespaces)
+* [Step 7: Link your namespaces](#step-7-link-your-namespaces)
+* [Step 8: Deploy and expose the database](#step-8-deploy-and-expose-the-database)
+* [Step 9: Deploy and expose the payment processor](#step-9-deploy-and-expose-the-payment-processor)
+* [Step 10: Deploy and expose the frontend](#step-10-deploy-and-expose-the-frontend)
+* [Step 11: Test the application](#step-11-test-the-application)
 * [Cleaning up](#cleaning-up)
+* [About this example](#about-this-example)
 
 ## Overview
 
@@ -52,23 +52,41 @@ to represent the private Kubernetes cluster and the public cloud.
 
 ## Prerequisites
 
-
 * The `kubectl` command-line tool, version 1.15 or later
   ([installation guide][install-kubectl])
 
-* The `skupper` command-line tool, the latest version ([installation
-  guide][install-skupper])
-
-* Access to at least one Kubernetes cluster, from any provider you
-  choose
+* Access to at least one Kubernetes cluster, from [any provider you
+  choose][kube-providers]
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[install-skupper]: https://skupper.io/install/index.html
+[kube-providers]: https://skupper.io/start/index.html#prerequisites
 
+## Step 1: Install the Skupper command-line tool
 
-## Step 1: Configure separate console sessions
+The `skupper` command-line tool is the primary entrypoint for
+installing and configuring the Skupper infrastructure.  You need
+to install the `skupper` command only once for each development
+environment.
 
-Skupper is designed for use with multiple namespaces, typically on
+On Linux or Mac, you can use the install script (inspect it
+[here][install-script]) to download and extract the command:
+
+~~~ shell
+curl https://skupper.io/install.sh | sh
+~~~
+
+The script installs the command under your home directory.  It
+prompts you to add the command to your path if necessary.
+
+For Windows and other installation options, see [Installing
+Skupper][install-docs].
+
+[install-script]: https://github.com/skupperproject/skupper-website/blob/main/docs/install.sh
+[install-docs]: https://skupper.io/install/index.html
+
+## Step 2: Configure separate console sessions
+
+Skupper is designed for use with multiple namespaces, usually on
 different clusters.  The `skupper` command uses your
 [kubeconfig][kubeconfig] and current context to select the
 namespace where it operates.
@@ -99,7 +117,7 @@ _**Console for private:**_
 export KUBECONFIG=~/.kube/config-private
 ~~~
 
-## Step 2: Access your clusters
+## Step 3: Access your clusters
 
 The methods for accessing your clusters vary by Kubernetes
 provider. Find the instructions for your chosen providers and use
@@ -114,7 +132,7 @@ session.  See the following links for more information:
 * [OpenShift](https://skupper.io/start/openshift.html)
 * [More providers](https://kubernetes.io/partners/#kcsp)
 
-## Step 3: Set up your namespaces
+## Step 4: Set up your namespaces
 
 Use `kubectl create namespace` to create the namespaces you wish
 to use (or use existing namespaces).  Use `kubectl config
@@ -154,7 +172,7 @@ $ kubectl config set-context --current --namespace private
 Context "minikube" modified.
 ~~~
 
-## Step 4: Install Skupper in your namespaces
+## Step 5: Install Skupper in your namespaces
 
 The `skupper init` command installs the Skupper router and service
 controller in the current namespace.  Run the `skupper init` command
@@ -193,7 +211,7 @@ Waiting for LoadBalancer IP or hostname...
 Skupper is now installed in namespace 'private'.  Use 'skupper status' to get more information.
 ~~~
 
-## Step 5: Check the status of your namespaces
+## Step 6: Check the status of your namespaces
 
 Use `skupper status` in each console to check that Skupper is
 installed.
@@ -231,7 +249,7 @@ The credentials for internal console-auth mode are held in secret: 'skupper-cons
 As you move through the steps below, you can use `skupper status` at
 any time to check your progress.
 
-## Step 6: Link your namespaces
+## Step 7: Link your namespaces
 
 Creating a link requires use of two `skupper` commands in
 conjunction, `skupper token create` and `skupper link create`.
@@ -282,7 +300,7 @@ to use `sftp` or a similar tool to transfer the token securely.
 By default, tokens expire after a single use or 15 minutes after
 creation.
 
-## Step 7: Deploy and expose the database
+## Step 8: Deploy and expose the database
 
 Use `docker` to run the database service on your local machine.
 In the public namespace, use the `skupper gateway expose`
@@ -310,7 +328,7 @@ NAME       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 database   ClusterIP   10.104.77.32   <none>        5432/TCP   15s
 ~~~
 
-## Step 8: Deploy and expose the payment processor
+## Step 9: Deploy and expose the payment processor
 
 In the private namespace, use the `kubectl apply` command to
 deploy the payment processor service.  Use the `skupper expose`
@@ -351,7 +369,7 @@ NAME                TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 payment-processor   ClusterIP   10.103.227.109   <none>        8080/TCP   1s
 ~~~
 
-## Step 9: Deploy and expose the frontend
+## Step 10: Deploy and expose the frontend
 
 In the public namespace, use the `kubectl apply` command to
 deploy the frontend service.  This also sets up an external load
@@ -371,7 +389,7 @@ deployment.apps/frontend created
 service/frontend created
 ~~~
 
-## Step 10: Test the application
+## Step 11: Test the application
 
 Now we're ready to try it out.  Use `kubectl get service/frontend`
 to look up the external IP of the frontend service.  Then use
@@ -426,5 +444,18 @@ kubectl delete deployment/payment-processor
 
 ## Next steps
 
-
 Check out the other [examples][examples] on the Skupper website.
+
+## About this example
+
+This example was produced using [Skewer][skewer], a library for
+documenting and testing Skupper examples.
+
+[skewer]: https://github.com/skupperproject/skewer
+
+Skewer provides some utilities for generating the README and running
+the example steps.  Use the `./plano` command in the project root to
+see what is available.
+
+To quickly stand up the example using Minikube, try the `./plano demo`
+command.
