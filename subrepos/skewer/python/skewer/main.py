@@ -19,217 +19,7 @@
 
 from plano import *
 
-_standard_steps_yaml = """
-install_the_skupper_command_line_tool:
-  title: Install the Skupper command-line tool
-  preamble: |
-    The `skupper` command-line tool is the primary entrypoint for
-    installing and configuring the Skupper infrastructure.  You need
-    to install the `skupper` command only once for each development
-    environment.
-
-    On Linux or Mac, you can use the install script (inspect it
-    [here][install-script]) to download and extract the command:
-
-    ~~~ shell
-    curl https://skupper.io/install.sh | sh
-    ~~~
-
-    The script installs the command under your home directory.  It
-    prompts you to add the command to your path if necessary.
-
-    For Windows and other installation options, see [Installing
-    Skupper][install-docs].
-
-    [install-script]: https://github.com/skupperproject/skupper-website/blob/main/docs/install.sh
-    [install-docs]: https://skupper.io/install/index.html
-configure_separate_console_sessions:
-  title: Configure separate console sessions
-  preamble: |
-    Skupper is designed for use with multiple namespaces, usually on
-    different clusters.  The `skupper` command uses your
-    [kubeconfig][kubeconfig] and current context to select the
-    namespace where it operates.
-
-    [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
-
-    Your kubeconfig is stored in a file in your home directory.  The
-    `skupper` and `kubectl` commands use the `KUBECONFIG` environment
-    variable to locate it.
-
-    A single kubeconfig supports only one active context per user.
-    Since you will be using multiple contexts at once in this
-    exercise, you need to create distinct kubeconfigs.
-
-    Start a console session for each of your namespaces.  Set the
-    `KUBECONFIG` environment variable to a different path in each
-    session.
-  commands:
-    "*":
-      - run: export KUBECONFIG=~/.kube/config-@namespace@
-access_your_clusters:
-  title: Access your clusters
-  preamble: |
-    The methods for accessing your clusters vary by Kubernetes
-    provider. Find the instructions for your chosen providers and use
-    them to authenticate and configure access for each console
-    session.  See the following links for more information:
-
-    * [Minikube](https://skupper.io/start/minikube.html)
-    * [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
-    * [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html)
-    * [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html)
-    * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html)
-    * [OpenShift](https://skupper.io/start/openshift.html)
-    * [More providers](https://kubernetes.io/partners/#kcsp)
-set_up_your_namespaces:
-  title: Set up your namespaces
-  preamble: |
-    Use `kubectl create namespace` to create the namespaces you wish
-    to use (or use existing namespaces).  Use `kubectl config
-    set-context` to set the current namespace for each session.
-  commands:
-    "*":
-      - output: namespace/@namespace@ created
-        run: kubectl create namespace @namespace@
-      - output: Context "minikube" modified.
-        run: kubectl config set-context --current --namespace @namespace@
-install_skupper_in_your_namespaces:
-  title: Install Skupper in your namespaces
-  preamble: |
-    The `skupper init` command installs the Skupper router and service
-    controller in the current namespace.  Run the `skupper init` command
-    in each namespace.
-
-    **Note:** If you are using Minikube, [you need to start `minikube
-    tunnel`][minikube-tunnel] before you install Skupper.
-
-    [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
-  commands:
-    "*":
-      - run: skupper init
-        output: |
-          Waiting for LoadBalancer IP or hostname...
-          Skupper is now installed in namespace '@namespace@'.  Use 'skupper status' to get more information.
-check_the_status_of_your_namespaces:
-  title: Check the status of your namespaces
-  preamble: |
-    Use `skupper status` in each console to check that Skupper is
-    installed.
-  commands:
-    "*":
-      - await: [deployment/skupper-service-controller, deployment/skupper-router]
-      - run: skupper status
-        output: |
-          Skupper is enabled for namespace "@namespace@" in interior mode. It is connected to 1 other site. It has 1 exposed service.
-          The site console url is: <console-url>
-          The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
-  postamble: |
-    As you move through the steps below, you can use `skupper status` at
-    any time to check your progress.
-link_your_namespaces:
-  title: Link your namespaces
-  preamble: |
-    Creating a link requires use of two `skupper` commands in
-    conjunction, `skupper token create` and `skupper link create`.
-
-    The `skupper token create` command generates a secret token that
-    signifies permission to create a link.  The token also carries the
-    link details.  Then, in a remote namespace, The `skupper link
-    create` command uses the token to create a link to the namespace
-    that generated it.
-
-    **Note:** The link token is truly a *secret*.  Anyone who has the
-    token can link to your namespace.  Make sure that only those you
-    trust have access to it.
-
-    First, use `skupper token create` in one namespace to generate the
-    token.  Then, use `skupper link create` in the other to create a
-    link.
-  commands:
-    "0":
-      - output: Token written to ~/secret.token
-        run: skupper token create ~/secret.token
-    "1":
-      - run: skupper link create ~/secret.token
-        output: |
-          Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
-          Check the status of the link using 'skupper link status'.
-      - run: skupper link status --wait 60
-        apply: test
-  postamble: |
-    If your console sessions are on different machines, you may need
-    to use `sftp` or a similar tool to transfer the token securely.
-    By default, tokens expire after a single use or 15 minutes after
-    creation.
-test_the_application:
-  title: Test the application
-  preamble: |
-    Now we're ready to try it out.  Use `kubectl get service/frontend`
-    to look up the external IP of the frontend service.  Then use
-    `curl` or a similar tool to request the `/api/health` endpoint at
-    that address.
-
-    **Note:** The `<external-ip>` field in the following commands is a
-    placeholder.  The actual value is an IP address.
-  commands:
-    "0":
-      - run: kubectl get service/frontend
-        apply: readme
-        output: |
-          NAME       TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)          AGE
-          frontend   LoadBalancer   10.103.232.28   <external-ip>   8080:30407/TCP   15s
-      - run: curl http://<external-ip>:8080/api/health
-        apply: readme
-        output: OK
-      - await_external_ip: service/frontend
-      - run: curl --fail --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health'); echo
-        apply: test
-  postamble: |
-    If everything is in order, you can now access the web interface by
-    navigating to `http://<external-ip>:8080/` in your browser.
-accessing_the_web_console:
-  title: Accessing the web console
-  numbered: false
-  preamble: |
-    Skupper includes a web console you can use to view the application
-    network.  To access it, use `skupper status` to look up the URL of
-    the web console.  Then use `kubectl get
-    secret/skupper-console-users` to look up the console admin
-    password.
-
-    **Note:** The `<console-url>` and `<password>` fields in the
-    following output are placeholders.  The actual values are specific
-    to your environment.
-  commands:
-    "0":
-      - run: skupper status
-        apply: readme
-        output: |
-          Skupper is enabled for namespace "@namespace@" in interior mode. It is connected to 1 other site. It has 1 exposed service.
-          The site console url is: <console-url>
-          The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
-      - run: kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
-        apply: readme
-        output: <password>
-      - await_external_ip: service/skupper
-      - run: curl --fail --insecure --verbose --retry 60 --retry-connrefused --retry-delay 2 $(kubectl get service/skupper -o jsonpath='https://{.status.loadBalancer.ingress[0].ip}:8080/') --user admin:$(kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d); echo
-        apply: test
-  postamble: |
-    Navigate to `<console-url>` in your browser.  When prompted, log
-    in as user `admin` and enter the password.
-cleaning_up:
-  id: cleaning_up
-  title: Cleaning up
-  numbered: false
-  preamble: |
-    To remove Skupper and the other resources from this exercise, use
-    the following commands.
-  commands:
-    "*":
-      - run: skupper delete
-"""
-
+_standard_steps_yaml = read(join(get_parent_dir(__file__), "standardsteps.yaml"))
 _standard_steps = parse_yaml(_standard_steps_yaml)
 
 _example_suite_para = """
@@ -249,7 +39,7 @@ _standard_prerequisites = """
   choose][kube-providers]
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[kube-providers]: https://skupper.io/start/index.html#prerequisites
+[kube-providers]: https://skupper.io/start/kubernetes.html
 """.strip()
 
 _standard_next_steps = """
@@ -262,9 +52,9 @@ documenting and testing Skupper examples.
 
 [skewer]: https://github.com/skupperproject/skewer
 
-Skewer provides some utilities for generating the README and running
-the example steps.  Use the `./plano` command in the project root to
-see what is available.
+Skewer provides utility functions for generating the README and
+running the example steps.  Use the `./plano` command in the project
+root to see what is available.
 
 To quickly stand up the example using Minikube, try the `./plano demo`
 command.
@@ -341,22 +131,16 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
     skewer_data = read_yaml(skewer_file)
     work_dir = make_temp_dir()
 
-    _apply_standard_steps(skewer_data)
-
     for i, site in enumerate(skewer_data["sites"].values()):
         site["kubeconfig"] = kubeconfigs[i]
 
-    steps = list()
-    cleaning_up_step = None
-
-    for step in skewer_data["steps"]:
-        if step.get("id") == "cleaning_up":
-            cleaning_up_step = step
-        else:
-            steps.append(step)
+    _apply_standard_steps(skewer_data)
 
     try:
-        for step in steps:
+        for step in skewer_data["steps"]:
+            if step.get("id") == "cleaning_up":
+                continue
+
             _run_step(work_dir, skewer_data, step)
 
         if "SKEWER_DEMO" in ENV:
@@ -386,9 +170,14 @@ def run_steps(skewer_file, *kubeconfigs, debug=False):
                     run("kubectl logs deployment/skupper-service-controller", check=False)
 
             print("-- End of debug output")
+
+        raise
     finally:
-        if cleaning_up_step is not None:
-            _run_step(work_dir, skewer_data, cleaning_up_step, check=False)
+        for step in skewer_data["steps"]:
+            if step.get("id") == "cleaning_up":
+                _run_step(work_dir, skewer_data, step, check=False)
+                break
+
 
 def _pause_for_demo(work_dir, skewer_data):
     first_site_name, first_site_data = list(skewer_data["sites"].items())[0]
@@ -402,8 +191,9 @@ def _pause_for_demo(work_dir, skewer_data):
         password = base64_decode(password_data).decode("ascii")
 
         if run("kubectl get service/frontend", check=False, output=DEVNULL).exit_code == 0:
-            frontend_ip = await_external_ip("service", "frontend")
-            frontend_url = f"http://{frontend_ip}:8080/"
+            if call("kubectl get service/frontend -o jsonpath='{.spec.type}'") == "LoadBalancer":
+                frontend_ip = await_external_ip("service", "frontend")
+                frontend_url = f"http://{frontend_ip}:8080/"
 
     print()
     print("Demo time!")
@@ -535,10 +325,13 @@ def generate_readme(skewer_file, output_file):
     out.append("")
 
     for i, step_data in enumerate(skewer_data["steps"], 1):
+        notice("Generating step '{}'", step_data["title"])
+
         if step_data.get("numbered", True):
             title = f"Step {i}: {step_data['title']}"
         else:
             title = step_data["title"]
+
 
         out.append(f"## {title}")
         out.append("")
@@ -616,6 +409,8 @@ def _generate_readme_step(skewer_data, step_data):
     return "\n".join(out).strip()
 
 def _apply_standard_steps(skewer_data):
+    notice("Applying standard steps")
+
     for step_data in skewer_data["steps"]:
         if "standard" not in step_data:
             continue
@@ -646,28 +441,32 @@ def _apply_standard_steps(skewer_data):
                 if "*" in standard_step_data["commands"]:
                     assert len(standard_step_data["commands"]) == 1, standard_step_data["commands"]
 
-                    for namespace, site_data in skewer_data["sites"].items():
+                    for site_key, site_data in skewer_data["sites"].items():
                         commands = standard_step_data["commands"]["*"]
 
-                        step_data["commands"][namespace] = _resolve_commands(commands, namespace)
+                        step_data["commands"][site_key] = _resolve_commands(commands, site_data)
                 else:
                     for site_index in standard_step_data["commands"]:
                         commands = standard_step_data["commands"][site_index]
-                        namespace = list(skewer_data["sites"])[int(site_index)]
+                        site_key, site_data = list(skewer_data["sites"].items())[int(site_index)]
 
-                        step_data["commands"][namespace] = _resolve_commands(commands, namespace)
+                        step_data["commands"][site_key] = _resolve_commands(commands, site_data)
 
-def _resolve_commands(commands, namespace):
+def _resolve_commands(commands, site_data):
     resolved_commands = list()
 
     for command in commands:
         resolved_command = dict(command)
 
         if "run" in command:
-            resolved_command["run"] = command["run"].replace("@namespace@", namespace)
+            resolved_command["run"] = command["run"]
+            resolved_command["run"] = resolved_command["run"].replace("@kubeconfig@", site_data["kubeconfig"])
+            resolved_command["run"] = resolved_command["run"].replace("@namespace@", site_data["namespace"])
 
         if "output" in command:
-            resolved_command["output"] = command["output"].replace("@namespace@", namespace)
+            resolved_command["output"] = command["output"]
+            resolved_command["output"] = resolved_command["output"].replace("@kubeconfig@", site_data["kubeconfig"])
+            resolved_command["output"] = resolved_command["output"].replace("@namespace@", site_data["namespace"])
 
         resolved_commands.append(resolved_command)
 
