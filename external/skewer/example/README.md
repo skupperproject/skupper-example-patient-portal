@@ -1,6 +1,8 @@
-# Patient Portal
+# Skupper Hello World
 
-#### A simple database-backed web application that runs in the public cloud but keeps its data in a private database
+[![main](https://github.com/skupperproject/skewer/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skewer/actions/workflows/main.yaml)
+
+#### A minimal HTTP application deployed across Kubernetes clusters using Skupper
 
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
@@ -15,11 +17,11 @@ across cloud providers, data centers, and edge sites.
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
 * [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
-* [Step 3: Set up your Podman network](#step-3-set-up-your-podman-network)
-* [Step 4: Deploy the application](#step-4-deploy-the-application)
-* [Step 5: Create your sites](#step-5-create-your-sites)
-* [Step 6: Link your sites](#step-6-link-your-sites)
-* [Step 7: Expose application services](#step-7-expose-application-services)
+* [Step 3: Deploy the frontent and backend](#step-3-deploy-the-frontent-and-backend)
+* [Step 4: Create your sites](#step-4-create-your-sites)
+* [Step 5: Link your sites](#step-5-link-your-sites)
+* [Step 6: Fail on demand](#step-6-fail-on-demand)
+* [Step 7: Expose the backend](#step-7-expose-the-backend)
 * [Step 8: Access the frontend](#step-8-access-the-frontend)
 * [Cleaning up](#cleaning-up)
 * [Summary](#summary)
@@ -28,36 +30,11 @@ across cloud providers, data centers, and edge sites.
 
 ## Overview
 
-This example is a simple database-backed web application that shows
-how you can use Skupper to access a database at a remote site
-without exposing it to the public internet.
-
-It contains three services:
-
-  * A PostgreSQL database running on a bare-metal or virtual
-    machine in a private data center.
-
-  * A payment-processing service running on Kubernetes in a private
-    data center.
-
-  * A web frontend service running on Kubernetes in the public
-    cloud.  It uses the PostgreSQL database and the
-    payment-processing service.
-
-The example uses two Kubernetes namespaces, `private` and `public`,
-to represent the Kubernetes cluster in the private data center and
-the public cloud.  It uses Podman to run the database.
+An overview
 
 ## Prerequisites
 
-* The `kubectl` command-line tool, version 1.15 or later
-  ([installation guide][install-kubectl])
-
-* Access to at least one Kubernetes cluster, from [any provider you
-  choose][kube-providers]
-
-[install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[kube-providers]: https://skupper.io/start/kubernetes.html
+Some prerequisites
 
 ## Step 1: Install the Skupper command-line tool
 
@@ -113,101 +90,103 @@ documentation for yours:
 * [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#cluster-access)
 * [OpenShift](https://skupper.io/start/openshift.html#cluster-access)
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
-export KUBECONFIG=~/.kube/config-public
+export KUBECONFIG=~/.kube/config-west
 # Enter your provider-specific login command
-kubectl create namespace public
-kubectl config set-context --current --namespace public
+kubectl create namespace west
+kubectl config set-context --current --namespace west
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
-export KUBECONFIG=~/.kube/config-private
+export KUBECONFIG=~/.kube/config-east
 # Enter your provider-specific login command
-kubectl create namespace private
-kubectl config set-context --current --namespace private
+kubectl create namespace east
+kubectl config set-context --current --namespace east
 ~~~
 
-## Step 3: Set up your Podman network
+## Step 3: Deploy the frontent and backend
 
-Open a new terminal window and set the `SKUPPER_PLATFORM`
-environment variable to `podman`.  This sets the Skupper platform
-to Podman for this terminal session.
+This example runs the frontend and the backend in separate
+Kubernetes namespaces, on different clusters.
 
-Use `podman network create` to create the Podman network that
-Skupper will use.
+Use `kubectl create deployment` to deploy the frontend in
+namespace `west` and the backend in namespace
+`east`.
 
-Use `systemctl` to enable the Podman API service.
-
-_**Podman:**_
+_**West:**_
 
 ~~~ shell
-export SKUPPER_PLATFORM=podman
-podman network create skupper
-systemctl --user enable --now podman.socket
+kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
-If `systemctl` is not available, you can also use the following command:
-
-~~~
-podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
-~~~
-
-## Step 4: Deploy the application
-
-Use `kubectl apply` to deploy the frontend and payment processor
-on Kubernetes.  Use `podman run` to start the database on your
-local machine.
-
-**Note:** It is important to name your running container using
-`--name` to avoid a collision with the container that Skupper
-creates for accessing the service.
-
-**Note:** You must use `--network skupper` with the `podman run`
-command.
-
-_**Public:**_
+_**East:**_
 
 ~~~ shell
-kubectl apply -f frontend/kubernetes.yaml
+kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
 ~~~
 
-_**Private:**_
+## Step 4: Create your sites
 
-~~~ shell
-kubectl apply -f payment-processor/kubernetes.yaml
-~~~
+A Skupper _site_ is a location where components of your
+application are running.  Sites are linked together to form a
+network for your application.  In Kubernetes, a site is associated
+with a namespace.
 
-_**Podman:**_
+For each namespace, use `skupper init` to create a site.  This
+deploys the Skupper router and controller.  Then use `skupper
+status` to see the outcome.
 
-~~~ shell
-podman run --name database-target --network skupper --detach --rm -p 5432:5432 quay.io/skupper/patient-portal-database
-~~~
+**Note:** If you are using Minikube, you need to [start minikube
+tunnel][minikube-tunnel] before you run `skupper init`.
 
-## Step 5: Create your sites
+[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 skupper init
+skupper status
 ~~~
 
-_**Private:**_
+_Sample output:_
+
+~~~ console
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Waiting for status...
+Skupper is now installed in namespace 'west'.  Use 'skupper status' to get more information.
+
+$ skupper status
+Skupper is enabled for namespace "west". It is not connected to any other sites. It has no exposed services.
+~~~
+
+_**East:**_
 
 ~~~ shell
-skupper init --ingress none
+skupper init
+skupper status
 ~~~
 
-_**Podman:**_
+_Sample output:_
 
-~~~ shell
-skupper init --ingress none
+~~~ console
+$ skupper init
+Waiting for LoadBalancer IP or hostname...
+Waiting for status...
+Skupper is now installed in namespace 'east'.  Use 'skupper status' to get more information.
+
+$ skupper status
+Skupper is enabled for namespace "east". It is not connected to any other sites. It has no exposed services.
 ~~~
 
-## Step 6: Link your sites
+As you move through the steps below, you can use `skupper status` at
+any time to check your progress.
+
+## Step 5: Link your sites
 
 Creating a link requires use of two `skupper` commands in
 conjunction, `skupper token create` and `skupper link create`.
@@ -222,26 +201,35 @@ that generated it.
 token can link to your site.  Make sure that only those you trust
 have access to it.
 
-First, use `skupper token create` in site Public to generate the
-token.  Then, use `skupper link create` in site Private to link
+First, use `skupper token create` in site West to generate the
+token.  Then, use `skupper link create` in site East to link
 the sites.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
-skupper token create --uses 2 ~/secret.token
+skupper token create ~/secret.token
 ~~~
 
-_**Private:**_
+_Sample output:_
+
+~~~ console
+$ skupper token create ~/secret.token
+Token written to ~/secret.token
+~~~
+
+_**East:**_
 
 ~~~ shell
 skupper link create ~/secret.token
 ~~~
 
-_**Podman:**_
+_Sample output:_
 
-~~~ shell
-skupper link create ~/secret.token
+~~~ console
+$ skupper link create ~/secret.token
+Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-04421a4c5042 (name=link1)
+Check the status of the link using 'skupper link status'.
 ~~~
 
 If your terminal sessions are on different machines, you may need
@@ -249,38 +237,36 @@ to use `scp` or a similar tool to transfer the token securely.  By
 default, tokens expire after a single use or 15 minutes after
 creation.
 
-## Step 7: Expose application services
+## Step 6: Fail on demand
 
-In Private, use `skupper expose` to expose the payment processor
-service.
-
-In Podman, use `skupper service create` and `skupper service
-bind` to expose the database on the Skupper network.
-
-Then, in Public, use `skupper service create` to make it
-available.
-
-**Note:** Podman sites do not automatically replicate services
-to remote sites.  You need to use `skupper service create` on
-each site where you wish to make a service available.
-
-_**Private:**_
+_**West:**_
 
 ~~~ shell
-skupper expose deployment/payment-processor --port 8080
+if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
+
 ~~~
 
-_**Podman:**_
+## Step 7: Expose the backend
+
+We now have our sites linked to form a Skupper network, but no
+services are exposed on it.  Skupper uses the `skupper expose`
+command to select a service from one site for exposure in all the
+linked sites.
+
+Use `skupper expose` to expose the backend service in East to
+the frontend in West.
+
+_**East:**_
 
 ~~~ shell
-skupper service create database 5432
-skupper service bind database host database-target --target-port 5432
+skupper expose deployment/backend --port 8080
 ~~~
 
-_**Public:**_
+_Sample output:_
 
-~~~ shell
-skupper service create database 5432
+~~~ console
+$ skupper expose deployment/backend --port 8080
+deployment backend exposed as backend
 ~~~
 
 ## Step 8: Access the frontend
@@ -301,7 +287,7 @@ request the `/api/health` endpoint at that address.
 **Note:** The `<external-ip>` field in the following commands is a
 placeholder.  The actual value is an IP address.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 kubectl expose deployment/frontend --port 8080 --type LoadBalancer
@@ -329,9 +315,9 @@ navigating to `http://<external-ip>:8080/` in your browser.
 ## Cleaning up
 
 To remove Skupper and the other resources from this exercise, use
-the following commands.
+the following commands:
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 skupper delete
@@ -339,23 +325,20 @@ kubectl delete service/frontend
 kubectl delete deployment/frontend
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
 skupper delete
-kubectl delete deployment/payment-processor
+kubectl delete deployment/backend
 ~~~
 
-_**Podman:**_
+## Summary
 
-~~~ shell
-skupper delete
-podman stop database-target
-~~~
+A summary
 
 ## Next steps
 
-Check out the other [examples][examples] on the Skupper website.
+Some next steps
 
 ## About this example
 
