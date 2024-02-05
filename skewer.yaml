@@ -21,6 +21,8 @@ overview: |
   The example uses two Kubernetes namespaces, `private` and `public`,
   to represent the Kubernetes cluster in the private data center and
   the public cloud.  It uses Podman to run the database.
+
+  <img src="diagram.png" width="640"/>
 sites:
   public:
     title: Public
@@ -42,6 +44,7 @@ sites:
 steps:
   - standard: install_the_skupper_command_line_tool
   - standard: kubernetes/set_up_your_namespaces
+    title: Set up your Kubernetes namespaces
   - standard: podman/set_up_your_podman_network
   - title: Deploy the application
     preamble: |

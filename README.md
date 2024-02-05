@@ -14,7 +14,7 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Install the Skupper command-line tool](#step-1-install-the-skupper-command-line-tool)
-* [Step 2: Set up your namespaces](#step-2-set-up-your-namespaces)
+* [Step 2: Set up your Kubernetes namespaces](#step-2-set-up-your-kubernetes-namespaces)
 * [Step 3: Set up your Podman network](#step-3-set-up-your-podman-network)
 * [Step 4: Deploy the application](#step-4-deploy-the-application)
 * [Step 5: Create your sites](#step-5-create-your-sites)
@@ -47,6 +47,8 @@ It contains three services:
 The example uses two Kubernetes namespaces, `private` and `public`,
 to represent the Kubernetes cluster in the private data center and
 the public cloud.  It uses Podman to run the database.
+
+<img src="diagram.png" width="640"/>
 
 ## Prerequisites
 
@@ -81,7 +83,7 @@ Skupper][install-docs].
 [install-script]: https://github.com/skupperproject/skupper-website/blob/main/input/install.sh
 [install-docs]: https://skupper.io/install/
 
-## Step 2: Set up your namespaces
+## Step 2: Set up your Kubernetes namespaces
 
 Skupper is designed for use with multiple Kubernetes namespaces,
 usually on different clusters.  The `skupper` and `kubectl`
