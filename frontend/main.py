@@ -17,6 +17,7 @@
 # under the License.
 #
 
+import argparse
 import asyncio
 import os
 import json
@@ -30,8 +31,6 @@ from starlette.applications import Starlette
 from starlette.background import BackgroundTask
 from starlette.responses import Response, FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
-
-process_id = f"frontend-{uuid.uuid4().hex[:8]}"
 
 database_host = os.environ.get("DATABASE_SERVICE_HOST", "localhost")
 database_port = os.environ.get("DATABASE_SERVICE_PORT", "5432")
@@ -49,35 +48,33 @@ class CustomJsonResponse(JSONResponse):
         return json.dumps(content, ensure_ascii=False, allow_nan=False,
                           indent=2, separators=(", ", ": "), default=str).encode("utf-8")
 
-def log(message):
-    print(f"{process_id}: {message}")
-
 async def startup():
     async def configure(conn):
         await conn.set_autocommit(True)
 
     global pool
-    pool = AsyncConnectionPool(database_url, configure=configure)
+    pool = AsyncConnectionPool(database_url, configure=configure, check=AsyncConnectionPool.check_connection)
 
     global change_event
     change_event = asyncio.Event()
 
     async def listen():
-        async with pool.connection() as conn:
-            await conn.execute("listen changes")
+        while True:
+            try:
+                async with pool.connection() as conn:
+                    await conn.execute("listen changes")
 
-            async for notify in conn.notifies():
-                change_event.set()
-                change_event.clear()
+                    async for notify in conn.notifies():
+                        change_event.set()
+                        change_event.clear()
+            except KeyboardInterrupt:
+                raise
+            except Exception as e:
+                print(str(e))
+
+            asyncio.sleep(2)
 
     asyncio.create_task(listen())
-
-    async def check():
-        while True:
-            await asyncio.sleep(60)
-            await pool.check()
-
-    asyncio.create_task(check())
 
 async def shutdown():
     await pool.close()
@@ -137,7 +134,7 @@ async def post_appointment_request_create(request):
     async with pool.connection() as conn:
         await conn.execute("insert into appointment_requests (patient_id, date, time) "
                            "values (%s, %s, %s)",
-                           (data["patient"], data["date"], data["time"]))
+                           [data["patient"], data["date"], data["time"]])
 
     return CustomJsonResponse({"error": None})
 
@@ -153,7 +150,7 @@ async def post_appointment_create(request):
         appointment_id = (await curs.fetchone())[0]
 
         await conn.execute("update appointment_requests set appointment_id = %s where id = %s",
-                           (appointment_id, data["request"]))
+                           [appointment_id, data["request"]])
 
     return CustomJsonResponse({"error": None})
 
@@ -162,19 +159,24 @@ async def post_bill_pay(request):
     data = await request.json()
 
     async with AsyncClient() as client:
-        response = await client.get(f"{payment_processor_url}/api/pay")
-        print("Payment processor response:", response, response.text)
+        response = await client.post(f"{payment_processor_url}/api/pay", json={})
+
+    if response.status_code != 200:
+        return CustomJsonResponse({"error": response.text}, response.status_code)
 
     async with pool.connection() as conn:
         await conn.execute("update bills "
                            "set date_paid = current_date "
                            "where id = %s",
-                           (data["bill"],))
+                           [data["bill"]])
 
     return CustomJsonResponse({"error": None})
 
 if __name__ == "__main__":
-    http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
-    http_port = int(os.environ.get("HTTP_PORT", 8080))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8080)
 
-    uvicorn.run(star, host=http_host, port=http_port)
+    args = parser.parse_args()
+
+    uvicorn.run(star, host=args.host, port=args.port)

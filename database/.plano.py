@@ -17,14 +17,20 @@
 # under the License.
 #
 
-FROM registry.fedoraproject.org/fedora-minimal:39
+from plano import *
 
-RUN microdnf -y install libpq pip && microdnf clean all
+image_tag = "quay.io/skupper/patient-portal-database"
 
-RUN pip install httpx psycopg psycopg_pool starlette sse_starlette uvicorn
+@command
+def build():
+    run(f"podman build -t {image_tag} .")
 
-ADD main.py /app/main.py
-ADD static /app/static
+@command
+def run_():
+    build()
+    run(f"podman run --net host {image_tag}")
 
-WORKDIR /app
-ENTRYPOINT ["python", "main.py"]
+@command
+def push():
+    build()
+    run(f"podman push {image_tag}")

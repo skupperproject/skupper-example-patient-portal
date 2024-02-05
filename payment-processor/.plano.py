@@ -17,14 +17,30 @@
 # under the License.
 #
 
-FROM registry.fedoraproject.org/fedora-minimal:39
+from plano import *
 
-RUN microdnf -y install libpq pip && microdnf clean all
+image_tag = "quay.io/skupper/patient-portal-payment-processor"
 
-RUN pip install httpx psycopg psycopg_pool starlette sse_starlette uvicorn
+@command
+def build():
+    run(f"podman build -t {image_tag} .")
 
-ADD main.py /app/main.py
-ADD static /app/static
+@command
+def run_container():
+    build()
+    run(f"podman run --net host {image_tag} --host localhost --port 8081")
 
-WORKDIR /app
-ENTRYPOINT ["python", "main.py"]
+@command
+def run_process():
+    with start("python3 main.py --host localhost --port 8081") as frontend:
+        sleep(0.5)
+
+        print(http_get(f"http://localhost:8081/api/health"))
+        print(http_post_json(f"http://localhost:8081/api/pay", {}))
+
+        sleep(86400)
+
+@command
+def push():
+    build()
+    run(f"podman push {image_tag}")
