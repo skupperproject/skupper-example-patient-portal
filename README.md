@@ -150,7 +150,8 @@ podman network create skupper
 systemctl --user enable --now podman.socket
 ~~~
 
-If `systemctl` is not available, you can also use the following command:
+If the `systemctl` command doesn't work, you can try the `podman
+system service` command instead:
 
 ~~~
 podman system service --time=0 unix://$XDG_RUNTIME_DIR/podman/podman.sock &
