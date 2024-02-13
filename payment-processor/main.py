@@ -18,17 +18,11 @@
 #
 
 import argparse
-import json
 import os
 import uvicorn
 
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, Response
-
-class CustomJsonResponse(JSONResponse):
-    def render(self, content):
-        return json.dumps(content, ensure_ascii=False, allow_nan=False,
-                          indent=2, separators=(", ", ": "), default=str).encode("utf-8")
 
 star = Starlette(debug=True)
 
@@ -36,9 +30,7 @@ star = Starlette(debug=True)
 async def pay(request):
     request_data = await request.json()
 
-    return CustomJsonResponse({"error": None})
-
-    return JSONResponse(response_data)
+    return JSONResponse({"error": None})
 
 @star.route("/api/health", methods=["GET"])
 async def health(request):
