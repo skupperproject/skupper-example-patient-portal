@@ -46,7 +46,8 @@ It contains three services:
 
 The example uses two Kubernetes namespaces, `private` and `public`,
 to represent the Kubernetes cluster in the private data center and
-the public cloud.  It uses Podman to run the database.
+the cluster in the public cloud.  It uses Podman to run the
+database.
 
 <img src="diagram.png" width="640"/>
 
