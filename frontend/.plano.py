@@ -18,28 +18,29 @@
 #
 
 from plano import *
+from plano.github import *
 
 image_tag = "quay.io/skupper/patient-portal-frontend"
 
 @command
-def build():
-    run(f"podman build -t {image_tag} .")
+def build(no_cache=False):
+    no_cache_arg = "--no-cache" if no_cache else ""
+
+    run(f"podman build {no_cache_arg} --format docker -t {image_tag} .")
 
 @command
-def run_container():
-    build()
-    run(f"podman run --net host {image_tag}")
+def run_():
+    run(f"podman run --net host {image_tag} --host localhost --port 8080")
 
 @command
-def run_process():
-    with start("python3 main.py") as frontend:
-        sleep(0.5)
-
-        print(http_get(f"http://localhost:8080/api/health"))
-
-        sleep(86400)
+def debug():
+    run(f"podman run -it --net host --entrypoint /bin/sh {image_tag}")
 
 @command
 def push():
-    build()
+    run("podman login quay.io")
     run(f"podman push {image_tag}")
+
+@command
+def update_gesso():
+    update_external_from_github("static/gesso", "ssorj", "gesso")

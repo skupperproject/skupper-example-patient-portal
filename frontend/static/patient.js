@@ -1,4 +1,23 @@
-import * as gesso from "./gesso/gesso.js";
+//
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+
+import * as gesso from "./gesso/main.js";
 import * as main from "./main.js";
 
 const html = `
@@ -21,19 +40,28 @@ const html = `
 <div class="tabs" id="tab">
   <nav>
     <a data-tab="overview">Overview</a>
+    <a data-tab="appointment-requests">Appointment requests</a>
     <a data-tab="appointments">Appointments</a>
     <a data-tab="bills">Bills</a>
     <a data-tab="doctors">Doctors</a>
   </nav>
 
   <div data-tab="overview">
-    <h1>Welcome!</h1>
+    <h1>Welcome, <span id="greeting-name">-</span>!</h1>
 
     <p><a class="button" id="appointment-request-create-link">Request an appointment</a></p>
 
-    <p>You have <b id="appointment-request-count">-</b> appointment request(s).</p>
+    <p id="appointment-request-summary"></p>
 
-    <p>You have <b id="appointment-count">-</b> upcoming appointment(s).</p>
+    <p id="appointment-summary"></p>
+
+    <p id="bill-summary"></p>
+  </div>
+
+  <div data-tab="appointment-requests">
+    <h1>Appointment requests</h1>
+
+    <div id="appointment-request-table"></div>
   </div>
 
   <div data-tab="appointments">
@@ -64,19 +92,27 @@ const html = `
 
 const tabs = new gesso.Tabs("tab");
 
+const appointmentRequestTable = new gesso.Table("appointment-request-table", [
+    ["ID", "id"],
+    ["Date and time", "datetime", datetime => new Date(datetime).toLocaleString()],
+    ["Description", "description", description => nvl(description, "-")],
+    ["", "id", id => gesso.createLink(null, null, {class: "button cancel-request", text: "Cancel request", data_id: id})],
+]);
+
 const appointmentTable = new gesso.Table("appointment-table", [
     ["ID", "id"],
-    ["Doctor", "doctor_id", (id, item, data) => data.doctors[id].name],
-    ["Date", "date"],
-    ["Time", "time"],
+    ["Doctor", "doctor_id", (id, record, data) => data.doctors[id].name],
+    ["Date and time", "datetime", datetime => new Date(datetime).toLocaleString()],
+    ["Description", "description", (id, record, data) => nvl(data.appointment_requests[record.appointment_request_id].description, "-")],
 ]);
 
 const billTable = new gesso.Table("bill-table", [
     ["ID", "id"],
-    ["Summary", "summary"],
-    ["Amount", "amount", amount => `$${amount}`],
-    ["Date paid", "date_paid", date => nvl(date, "-")],
-    ["", "id", id => gesso.createLink(null, `/bill/pay?bill=${id}`, {class: "button", text: "Pay"})],
+    ["Doctor", "appointment_id", (id, record, data) => data.doctors[data.appointments[id].doctor_id].name],
+    ["Appointment", "appointment_id", (id, record, data) => new Date(data.appointments[id].datetime).toLocaleString()],
+    ["Amount due", "amount_due", amount_due => `$${amount_due}`],
+    ["Date paid", "payment_datetime", datetime => nvl(datetime, "-", new Date(datetime).toLocaleString())],
+    ["", "id", id => gesso.createLink(null, `/bill/pay?id=${id}`, {class: "button", text: "Pay bill"})],
 ]);
 
 const doctorTable = new gesso.Table("doctor-table", [
@@ -100,24 +136,48 @@ export class MainPage extends gesso.Page {
     }
 
     updateContent() {
-        gesso.getJson("/api/data", data => {
+        gesso.fetchJSON("/api/data", data => {
             const id = parseInt($p("id"));
             const name = data.patients[id].name;
             const appointmentRequestCreateLink = `/appointment-request/create?patient=${id}`;
-            const appointmentRequests = Object.values(data.appointment_requests)
-                  .filter(item => item.patient_id === id && item.appointment_id === null);
-            const appointments = Object.values(data.appointments).filter(item => item.patient_id === id);
-            const bills = Object.values(data.bills).filter(item => item.patient_id === id);
+
+            const appointmentRequests = Object.values(data.appointment_requests).filter(record => {
+                return id === record.patient_id && !Object.values(data.appointments).some(x => x.appointment_request_id === record.id);
+            });
+
+            const appointments = Object.values(data.appointments).filter(record => {
+                return data.appointment_requests[record.appointment_request_id].patient_id === id;
+            });
+
+            const bills = Object.values(data.bills).filter(record => {
+                return data.appointment_requests[data.appointments[record.appointment_id].appointment_request_id].patient_id === id;
+            });
+
+            const unpaidBills = bills.filter(record => record.payment_datetime === null);
             const doctors = Object.values(data.doctors);
 
             $("#patient-name").textContent = name;
-            $("#appointment-request-create-link").setAttribute("href", appointmentRequestCreateLink);
-            $("#appointment-request-count").textContent = appointmentRequests.length;
-            $("#appointment-count").textContent = appointments.length;
+            $("#greeting-name").textContent = name.split(/ /)[0];
 
+            $("#appointment-request-create-link").setAttribute("href", appointmentRequestCreateLink);
+            $("#appointment-request-summary").innerHTML =
+                `You have <b>${appointmentRequests.length}</b> ${gesso.plural("appointment request", appointmentRequests.length)}.`;
+            $("#appointment-summary").innerHTML =
+                `You have <b>${appointments.length}</b> ${gesso.plural("confirmed appointment", appointments.length)}.`;
+            $("#bill-summary").innerHTML =
+                `You have <b>${unpaidBills.length}</b> ${gesso.plural("unpaid bill", unpaidBills.length)}.`;
+
+            appointmentRequestTable.update(appointmentRequests, data);
             appointmentTable.update(appointments, data);
-            billTable.update(bills);
+            billTable.update(bills, data);
             doctorTable.update(doctors);
+
+            for (const elem of $$("a.cancel-request")) {
+                elem.addEventListener("click", event => {
+                    event.preventDefault();
+                    gesso.postJSON("/api/appointment-request/delete", {appointment_request: event.target.getAttribute("data-id")});
+                });
+            }
         });
     }
 }

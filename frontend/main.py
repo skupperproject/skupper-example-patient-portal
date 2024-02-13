@@ -19,6 +19,7 @@
 
 import argparse
 import asyncio
+import datetime
 import os
 import json
 import uuid
@@ -43,10 +44,15 @@ payment_processor_url = f"http://{payment_processor_host}:{payment_processor_por
 pool = None
 change_event = None
 
+def json_serializer(obj):
+    if isinstance(obj, (datetime.datetime, datetime.date)):
+        return obj.replace(tzinfo=datetime.timezone.utc).isoformat()
+
+    raise TypeError(f"Type {type(obj)} is not serializable")
+
 class CustomJsonResponse(JSONResponse):
-    def render(self, content):
-        return json.dumps(content, ensure_ascii=False, allow_nan=False,
-                          indent=2, separators=(", ", ": "), default=str).encode("utf-8")
+    def render(self, data):
+        return json.dumps(data, default=json_serializer).encode("utf-8")
 
 async def startup():
     async def configure(conn):
@@ -72,7 +78,7 @@ async def startup():
             except Exception as e:
                 print(str(e))
 
-            asyncio.sleep(2)
+            await asyncio.sleep(1)
 
     asyncio.create_task(listen())
 
@@ -87,6 +93,7 @@ star.mount("/static", StaticFiles(directory="static"), name="static")
 @star.route("/doctor")
 @star.route("/appointment/create")
 @star.route("/appointment-request/create")
+@star.route("/bill/create")
 @star.route("/bill/pay")
 async def get_index(request):
     return FileResponse("static/index.html")
@@ -132,9 +139,18 @@ async def post_appointment_request_create(request):
     data = await request.json()
 
     async with pool.connection() as conn:
-        await conn.execute("insert into appointment_requests (patient_id, date, time) "
+        await conn.execute("insert into appointment_requests (patient_id, datetime, description) "
                            "values (%s, %s, %s)",
-                           [data["patient"], data["date"], data["time"]])
+                           [data["patient"], data["datetime"], data["description"]])
+
+    return CustomJsonResponse({"error": None})
+
+@star.route("/api/appointment-request/delete", methods=["POST"])
+async def post_appointment_request_delete(request):
+    data = await request.json()
+
+    async with pool.connection() as conn:
+        await conn.execute("delete from appointment_requests where id = %s", [data["appointment_request"]])
 
     return CustomJsonResponse({"error": None})
 
@@ -143,14 +159,20 @@ async def post_appointment_create(request):
     data = await request.json()
 
     async with pool.connection() as conn:
-        curs = await conn.execute("insert into appointments (doctor_id, patient_id, date, time) "
-                                  "values (%s, %s, %s, %s) returning id",
-                                  (data["doctor"], data["patient"], data["date"], data["time"]))
+        await conn.execute("insert into appointments (appointment_request_id, doctor_id, datetime) "
+                           "values (%s, %s, %s)",
+                           [data["appointment_request"], data["doctor"], data["datetime"]])
 
-        appointment_id = (await curs.fetchone())[0]
+    return CustomJsonResponse({"error": None})
 
-        await conn.execute("update appointment_requests set appointment_id = %s where id = %s",
-                           [appointment_id, data["request"]])
+@star.route("/api/bill/create", methods=["POST"])
+async def post_bill_create(request):
+    data = await request.json()
+
+    async with pool.connection() as conn:
+        await conn.execute("insert into bills (appointment_id, amount_due) "
+                           "values (%s, %s)",
+                           [data["appointment"], data["amount_due"]])
 
     return CustomJsonResponse({"error": None})
 
@@ -166,7 +188,7 @@ async def post_bill_pay(request):
 
     async with pool.connection() as conn:
         await conn.execute("update bills "
-                           "set date_paid = current_date "
+                           "set payment_datetime = current_timestamp "
                            "where id = %s",
                            [data["bill"]])
 
