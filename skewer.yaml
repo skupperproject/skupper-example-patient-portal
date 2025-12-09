@@ -1,6 +1,5 @@
 title: Patient Portal
 subtitle: A simple database-backed web application that runs in the public cloud but keeps its data in a private database
-workflow: null
 overview: |
   This example is a simple database-backed web application that shows
   how you can use Skupper to access a database at a remote site
@@ -43,10 +42,11 @@ sites:
     env:
       SKUPPER_PLATFORM: podman
 steps:
-  - standard: install_the_skupper_command_line_tool
-  - standard: kubernetes/set_up_your_namespaces
-    title: Set up your Kubernetes namespaces
-  - standard: podman/set_up_your_podman_network
+  - standard: platform/access_your_kubernetes_clusters
+  - standard: platform/create_your_kubernetes_namespaces
+  - standard: platform/set_up_your_podman_environment
+  - standard: platform/install_skupper_on_your_kubernetes_clusters
+  - standard: platform/install_the_skupper_command_line_tool
   - title: Deploy the application
     preamble: |
       Use `kubectl apply` to deploy the frontend and payment processor
@@ -67,55 +67,65 @@ steps:
         - run: kubectl apply -f payment-processor/kubernetes.yaml
         - await_resource: deployment/payment-processor
       podman:
-        - run: podman run --name database-target --network skupper --detach --rm -p 5432:5432 quay.io/skupper/patient-portal-database
+        - run: podman network create skupper
+        - run: podman run --name database-target --detach --rm -p 5432:5432 quay.io/skupper/patient-portal-database
   - title: Create your sites
+    preamble: |
+      Use `skupper site create` to configure each location.  Enable
+      link access on Public so it can issue tokens for the other sites.
+      Disable ingress on Private and Podman.
     commands:
       public:
-        - run: skupper init
+        - run: skupper site create public --enable-link-access
       private:
-        - run: skupper init --ingress none
+        - run: skupper site create private 
       podman:
-        - run: skupper init --ingress none
-  - standard: link_your_sites
+        - run: skupper system install
+        - run: skupper site create podman 
+        - run: skupper system start
+  - title: Link your sites
+    preamble: |
+      Use `skupper token issue` in Public to generate a token that can
+      be redeemed by both Private and Podman.  Then, use `skupper token
+      redeem` from each remote site to create the links.
     commands:
       public:
-        - run: skupper token create --uses 2 ~/secret.token
+        - run: skupper token issue --redemptions-allowed 2 ~/secret.token
       private:
-        - run: skupper link create ~/secret.token
+        - run: skupper token redeem ~/secret.token
       podman:
-        - run: skupper link create ~/secret.token
+        - run: skupper token redeem ~/secret.token
   - title: Expose application services
     preamble: |
-      In Private, use `skupper expose` to expose the payment processor
-      service.
+      Use listeners at the consumer site and connectors where each
+      service runs.
 
-      In Podman, use `skupper service create` and `skupper service
-      bind` to expose the database on the Skupper network.
-
-      Then, in Public, use `skupper service create` to make it
-      available.
+      In Public, create listeners for the payment processor and
+      database.  In Private, create a connector to the
+      payment-processor workload.  In Podman, create a connector to
+      the database container.
 
       **Note:** Podman sites do not automatically replicate services
-      to remote sites.  You need to use `skupper service create` on
-      each site where you wish to make a service available.
+      to remote sites.  You need to define the listener on each site
+      where you wish to make a service available.
     commands:
+      public:
+        - run: skupper listener create payment-processor 8080
+        - run: skupper listener create database 5432
       private:
-        - run: skupper expose deployment/payment-processor --port 8080
+        - run: skupper connector create payment-processor 8080
       podman:
-        - run: skupper service create database 5432
-        - run: skupper service bind database host database-target --target-port 5432
-      public:
-        - run: skupper service create database 5432
-  - standard: hello_world/access_the_frontend
-  - standard: cleaning_up
+        - run: skupper connector create database 5432 --host database-target
+  - standard: skupper/cleaning_up/kubernetes_cli
+  - title: Cleaning up
     commands:
       public:
-        - run: skupper delete
-        - run: kubectl delete service/frontend
+        - run: skupper site delete --all
         - run: kubectl delete deployment/frontend
       private:
-        - run: skupper delete
+        - run: skupper site delete --all
         - run: kubectl delete deployment/payment-processor
       podman:
-        - run: skupper delete
+        - run: skupper site delete --all
         - run: podman stop database-target
+

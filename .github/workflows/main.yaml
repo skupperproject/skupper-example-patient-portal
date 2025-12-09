@@ -17,8 +17,25 @@
 # under the License.
 #
 
-from plano import *
-
-@test
-def hello_again():
-    print("Hello again")
+name: main
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * 0"
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: medyagh/setup-minikube@latest
+      - run: curl https://skupper.io/v2/install.sh | sh
+      - run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: ./plano test
+        env:
+          PLANO_COLOR: 1
