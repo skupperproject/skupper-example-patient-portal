@@ -25,14 +25,14 @@ example_suite: |
     [website]: https://skupper.io/
     [examples]: https://skupper.io/examples/index.html
 prerequisites: |
-    * The `kubectl` command-line tool, version 1.15 or later
-      ([installation guide][install-kubectl])
-
     * Access to at least one Kubernetes cluster, from [any provider you
-      choose][kube-providers]
+      choose][kube-providers].
 
-    [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+    * The `kubectl` command-line tool, version 1.15 or later
+      ([installation guide][install-kubectl]).
+
     [kube-providers]: https://skupper.io/start/kubernetes.html
+    [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 next_steps: |
     Check out the other [examples][examples] on the Skupper website.
 about_this_example: |
